@@ -38,3 +38,36 @@ Validation: `cargo fmt --check` passes. `cargo test` passes with five tests cove
 ## Next recommended build
 
 Implement persistent local volume registration and a read-only source inspection step. Require canonical UNC/Volume GUID identity, sentinel verification, and a dry-run diff before adding any scan, catalogue, hash, or migration write path.
+
+## Foundation Build 2 — Durable Volume Registry and Read-Only Inspection
+
+### Purpose
+
+The second foundation build adds durable, service-local volume registration and a shallow inspection capability while preserving the original no-write reconciliation boundary. It does not create a media catalogue, run recursive scans, mount shares, persist credentials, or modify a registered source.
+
+### Front end
+
+Not applicable. The desktop client remains unchanged and has not yet been wired to the new service endpoints.
+
+### Connector and integration
+
+The versioned loopback contract now supports `POST /Cinevault/Volumes` and `POST /Cinevault/Volumes/{id}/Inspect`. Registration accepts structured volume metadata only; inspection accepts a registered identifier rather than an arbitrary filesystem path. SMB registration requires a UNC route, and the response returns no entries for offline or unverified volumes.
+
+### Back end
+
+The service stores a versioned `volumes.v1.json` registry in service-local application state, using a synchronized staging file and retaining a backup of the prior readable record. Registry writes complete before in-memory state changes. Inspection samples at most 100 immediate entries, does not recurse, and does not open source files or perform catalogue writes.
+
+### Verification
+
+| Item | Result |
+|---|---|
+| Service formatting | Passed: `cargo fmt --check` |
+| Service safety and route tests | Passed: 10 tests |
+| Desktop strict type check | Passed |
+| Desktop production build | Passed; existing Vite chunking warning remains non-blocking |
+| Inherited development gate and desktop regression suite | Passed: 25 tests |
+| Release authorization | **False**; Windows service installation and installer validation remain outstanding |
+
+### Next recommended build
+
+Add real Windows volume identity discovery and a health probe that records reachability without mounting a share or altering registry data. After that, design a read-only recursive inventory proposal with an explicit diff and user approval gate before any catalogue or filesystem write is introduced.

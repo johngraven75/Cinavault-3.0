@@ -1,17 +1,18 @@
 openapi: 3.1.0
 info:
   title: CinaVault 3.0 Service Foundation API
-  version: 3.0.0-alpha.1
+  version: 3.0.0-alpha.2
   description: |
-    Loopback-first service contract for CinaVault 3.0. This foundation exposes
-    health and non-destructive volume reconciliation planning only.
+    Loopback-first service contract for CinaVault 3.0. This milestone persists
+    approved volume metadata locally and supports bounded, read-only source inspection.
+    It does not mount sources, persist credentials, recurse into directories, or write a catalogue.
 servers:
   - url: http://127.0.0.1:8097
     description: Default local-only listener
 paths:
   /health:
     get:
-      summary: Return service identity and local bind policy
+      summary: Return service identity, contract version, and local bind policy
       responses:
         '200':
           description: Service is running
@@ -21,16 +22,64 @@ paths:
                 $ref: '#/components/schemas/HealthResponse'
   /Cinevault/Volumes:
     get:
-      summary: List known volumes
+      summary: List registered volumes in deterministic identifier order
       responses:
         '200':
-          description: Volume list
+          description: Registered volume list
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Volume'
+    post:
+      summary: Persist a validated local volume registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Volume'
+      responses:
+        '201':
+          description: Volume registration persisted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+        '409':
+          description: Volume identifier already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Registration is invalid, including non-UNC SMB routes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /Cinevault/Volumes/{id}/Inspect:
+    post:
+      summary: Inspect at most 100 immediate entries for a registered and verified volume
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Read-only inspection result. Offline, unverified, and unavailable states return no entries.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceInspection'
+        '404':
+          description: No registered volume has the supplied identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
   /Cinevault/Volumes/ReconcilePlan:
     post:
       summary: Produce a non-destructive dry-run volume reconciliation plan
@@ -60,8 +109,8 @@ components:
       required: [service, version, contract_version, bind_policy]
       properties:
         service: { type: string }
-        version: { type: string }
-        contract_version: { type: string, example: v3alpha1 }
+        version: { type: string, example: 3.0.0-alpha.2 }
+        contract_version: { type: string, example: v3alpha2 }
         bind_policy: { type: string }
     VolumeRoute:
       type: object
@@ -74,17 +123,39 @@ components:
       type: object
       required: [id, label, kind, routes, health, sentinel_status, read_only, power_policy]
       properties:
-        id: { type: string }
-        label: { type: string }
+        id:
+          type: string
+          pattern: '^[A-Za-z0-9_-]{1,128}$'
+        label: { type: string, minLength: 1, maxLength: 256 }
         kind: { type: string, enum: [smb, nfs, local, iscsi, removable] }
         routes:
           type: array
+          minItems: 1
           items: { $ref: '#/components/schemas/VolumeRoute' }
         health: { type: string, enum: [online, offline] }
         sentinel_status: { type: string, enum: [verified, derived_read_only, missing, mismatch, not_checked] }
         read_only: { type: boolean }
         power_policy: { type: string, enum: [always_on, spins_down, removable] }
         last_spin_up_cause: { type: [string, 'null'] }
+    SourceEntrySample:
+      type: object
+      required: [name, kind]
+      properties:
+        name: { type: string }
+        kind: { type: string, enum: [file, directory, symlink, other] }
+    SourceInspection:
+      type: object
+      required: [volume_id, status, entries, truncated, message]
+      properties:
+        volume_id: { type: string }
+        status: { type: string, enum: [ready, offline, unverified, unavailable] }
+        route: { type: [string, 'null'] }
+        entries:
+          type: array
+          maxItems: 100
+          items: { $ref: '#/components/schemas/SourceEntrySample' }
+        truncated: { type: boolean }
+        message: { type: string }
     ReconcileRequest:
       type: object
       required: [volume, dry_run]
@@ -92,7 +163,7 @@ components:
         volume: { $ref: '#/components/schemas/Volume' }
         dry_run:
           type: boolean
-          description: Must be true in the foundation milestone.
+          description: Must be true in the current service milestone.
     ReconcilePlan:
       type: object
       required: [outcome, dry_run, changes, message]
@@ -102,7 +173,7 @@ components:
         changes:
           type: array
           items: { type: string }
-          description: Empty until real scanning is explicitly approved and implemented.
+          description: Empty until a later explicitly approved scanning and mutation milestone.
         message: { type: string }
     ApiError:
       type: object

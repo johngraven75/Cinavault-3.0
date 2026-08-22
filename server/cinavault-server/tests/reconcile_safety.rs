@@ -77,7 +77,7 @@ async fn health_endpoint_reports_loopback_only_foundation_policy() {
     assert_eq!(response.status(), StatusCode::OK);
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let payload: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(payload["contract_version"], "v3alpha1");
+    assert_eq!(payload["contract_version"], "v3alpha2");
     assert!(payload["bind_policy"]
         .as_str()
         .unwrap()
@@ -106,4 +106,270 @@ async fn reconcile_endpoint_rejects_non_dry_run_requests() {
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let payload: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(payload["code"], "dry_run_required");
+}
+
+use std::{
+    fs,
+    path::{Path as FsPath, PathBuf},
+    sync::atomic::{AtomicU64, Ordering},
+};
+
+static NEXT_TEMP_DIRECTORY: AtomicU64 = AtomicU64::new(0);
+
+fn temporary_state_directory() -> PathBuf {
+    let directory = std::env::temp_dir().join(format!(
+        "cinavault-server-test-{}-{}",
+        std::process::id(),
+        NEXT_TEMP_DIRECTORY.fetch_add(1, Ordering::Relaxed)
+    ));
+    fs::create_dir_all(&directory).unwrap();
+    directory
+}
+
+fn local_volume(
+    id: &str,
+    root: &FsPath,
+    health: VolumeHealth,
+    sentinel_status: SentinelStatus,
+) -> Volume {
+    Volume {
+        id: id.to_owned(),
+        label: format!("{id} local media"),
+        kind: VolumeKind::Local,
+        routes: vec![VolumeRoute {
+            path: root.to_string_lossy().to_string(),
+            priority: 1,
+            healthy: true,
+        }],
+        health,
+        sentinel_status,
+        read_only: true,
+        power_policy: PowerPolicy::AlwaysOn,
+        last_spin_up_cause: None,
+    }
+}
+
+async fn register_volume_via_api(state: AppState, volume: Volume) -> StatusCode {
+    build_router(state)
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/Cinevault/Volumes")
+                .header("content-type", "application/json")
+                .body(Body::from(serde_json::to_string(&volume).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+        .status()
+}
+
+#[tokio::test]
+async fn registered_volume_survives_service_state_restart() {
+    let state_directory = temporary_state_directory();
+    let registry_path = state_directory.join("volumes.v1.json");
+    let source_directory = state_directory.join("source");
+    fs::create_dir_all(&source_directory).unwrap();
+    let volume = local_volume(
+        "local-library",
+        &source_directory,
+        VolumeHealth::Online,
+        SentinelStatus::Verified,
+    );
+
+    let status = register_volume_via_api(
+        AppState::with_registry_path(&registry_path).unwrap(),
+        volume,
+    )
+    .await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert!(registry_path.exists());
+
+    let response = build_router(AppState::with_registry_path(&registry_path).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/Cinevault/Volumes")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let volumes: Vec<Volume> = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(volumes.len(), 1);
+    assert_eq!(volumes[0].id, "local-library");
+
+    fs::remove_dir_all(state_directory).unwrap();
+}
+
+#[tokio::test]
+async fn duplicate_volume_registration_is_rejected_without_mutating_registry() {
+    let state_directory = temporary_state_directory();
+    let registry_path = state_directory.join("volumes.v1.json");
+    let source_directory = state_directory.join("source");
+    fs::create_dir_all(&source_directory).unwrap();
+    let volume = local_volume(
+        "duplicate-test",
+        &source_directory,
+        VolumeHealth::Online,
+        SentinelStatus::Verified,
+    );
+
+    let state = AppState::with_registry_path(&registry_path).unwrap();
+    assert_eq!(
+        register_volume_via_api(state.clone(), volume.clone()).await,
+        StatusCode::CREATED
+    );
+    assert_eq!(
+        register_volume_via_api(state, volume).await,
+        StatusCode::CONFLICT
+    );
+
+    let state_after_restart = AppState::with_registry_path(&registry_path).unwrap();
+    let response = build_router(state_after_restart)
+        .oneshot(
+            Request::builder()
+                .uri("/Cinevault/Volumes")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let volumes: Vec<Volume> = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(volumes.len(), 1);
+
+    fs::remove_dir_all(state_directory).unwrap();
+}
+
+#[tokio::test]
+async fn verified_registered_volume_produces_a_bounded_non_recursive_sample() {
+    let state_directory = temporary_state_directory();
+    let registry_path = state_directory.join("volumes.v1.json");
+    let source_directory = state_directory.join("source");
+    fs::create_dir_all(source_directory.join("nested")).unwrap();
+    fs::write(
+        source_directory.join("zeta.mkv"),
+        b"not-opened-by-inspection",
+    )
+    .unwrap();
+    fs::write(
+        source_directory.join("alpha.mp4"),
+        b"not-opened-by-inspection",
+    )
+    .unwrap();
+    fs::write(
+        source_directory.join("nested").join("hidden.mkv"),
+        b"nested",
+    )
+    .unwrap();
+    let volume = local_volume(
+        "inspect-ready",
+        &source_directory,
+        VolumeHealth::Online,
+        SentinelStatus::Verified,
+    );
+
+    let state = AppState::with_registry_path(&registry_path).unwrap();
+    assert_eq!(
+        register_volume_via_api(state.clone(), volume).await,
+        StatusCode::CREATED
+    );
+    let response = build_router(state)
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/Cinevault/Volumes/inspect-ready/Inspect")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let inspection: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(inspection["status"], "ready");
+    assert_eq!(inspection["entries"][0]["name"], "alpha.mp4");
+    assert_eq!(inspection["entries"][1]["name"], "nested");
+    assert_eq!(inspection["entries"][2]["name"], "zeta.mkv");
+    assert!(!inspection["entries"].to_string().contains("hidden.mkv"));
+
+    fs::remove_dir_all(state_directory).unwrap();
+}
+
+#[tokio::test]
+async fn offline_and_unverified_registered_volumes_never_read_source_entries() {
+    for (volume_id, health, sentinel, expected_status) in [
+        (
+            "offline-volume",
+            VolumeHealth::Offline,
+            SentinelStatus::Verified,
+            "offline",
+        ),
+        (
+            "unverified-volume",
+            VolumeHealth::Online,
+            SentinelStatus::Missing,
+            "unverified",
+        ),
+    ] {
+        let state_directory = temporary_state_directory();
+        let registry_path = state_directory.join("volumes.v1.json");
+        let source_directory = state_directory.join("source");
+        fs::create_dir_all(&source_directory).unwrap();
+        fs::write(
+            source_directory.join("would-be-visible.mkv"),
+            b"do-not-read",
+        )
+        .unwrap();
+        let volume = local_volume(volume_id, &source_directory, health, sentinel);
+        let state = AppState::with_registry_path(&registry_path).unwrap();
+        assert_eq!(
+            register_volume_via_api(state.clone(), volume).await,
+            StatusCode::CREATED
+        );
+
+        let response = build_router(state)
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri(format!("/Cinevault/Volumes/{volume_id}/Inspect"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let inspection: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(inspection["status"], expected_status);
+        assert!(inspection["entries"].as_array().unwrap().is_empty());
+
+        fs::remove_dir_all(state_directory).unwrap();
+    }
+}
+
+#[tokio::test]
+async fn smb_registration_requires_a_canonical_unc_route() {
+    let state_directory = temporary_state_directory();
+    let registry_path = state_directory.join("volumes.v1.json");
+    let mut invalid_smb = volume(VolumeHealth::Online, SentinelStatus::Verified);
+    invalid_smb.id = "bad-smb".to_owned();
+    invalid_smb.routes[0].path = "/not/a/unc/path".to_owned();
+
+    let response = build_router(AppState::with_registry_path(&registry_path).unwrap())
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/Cinevault/Volumes")
+                .header("content-type", "application/json")
+                .body(Body::from(serde_json::to_string(&invalid_smb).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+
+    fs::remove_dir_all(state_directory).unwrap();
 }
