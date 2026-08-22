@@ -4,7 +4,7 @@
   "edition": "Server Foundation",
   "semanticVersion": "3.0.0",
   "releaseCycle": "v3.0",
-  "displayBuild": "foundation.1",
-  "displayName": "v3.0 Foundation Build 1",
-  "releaseTag": "v3.0.0-foundation.1"
+  "displayBuild": "1",
+  "displayName": "v3.0 Build 1",
+  "releaseTag": "v3-build-1"
 }

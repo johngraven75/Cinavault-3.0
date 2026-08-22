@@ -5,7 +5,7 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const readJson = async (path) => JSON.parse(await read(path));
 
-test("v2 Build 1.03 command palette stability layer remains last", async () => {
+test("CinaVault 3.0 command palette stability layer remains last", async () => {
   const main = await read("src/main.tsx");
   const buildInfo = await read("src/buildInfo.ts");
   const build = await readJson("build-version.json");
@@ -14,7 +14,7 @@ test("v2 Build 1.03 command palette stability layer remains last", async () => {
     'import "./styles/command-palette-stability.css"',
   );
 
-  assert.ok(uiStabilityIndex >= 0, "existing v2 Build 1.02 stability layer is retained");
+  assert.ok(uiStabilityIndex >= 0, "existing UI stability layer is retained");
   assert.ok(
     commandStabilityIndex > uiStabilityIndex,
     "Ctrl+K overrides load after earlier shell styles",
@@ -23,9 +23,9 @@ test("v2 Build 1.03 command palette stability layer remains last", async () => {
   assert.match(buildInfo, /BUILD_INFO/);
   assert.match(main, /BUILD_INFO\.displayName/);
   assert.equal(typeof build.displayName, "string");
-  assert.match(build.displayName, /^v2(?:\.\d+)? Build \d+(?:\.\d+)?$/);
+  assert.match(build.displayName, /^v3(?:\.\d+)? Build \d+(?:\.\d+)?$/);
   assert.equal(typeof build.releaseTag, "string");
-  assert.ok(build.releaseTag.startsWith("v2-build-"));
+  assert.ok(build.releaseTag.startsWith("v3-build-"));
 });
 
 test("Ctrl+K overlay avoids WebView2 blur and transform composition", async () => {

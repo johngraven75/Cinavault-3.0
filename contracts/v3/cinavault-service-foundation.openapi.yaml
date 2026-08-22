@@ -1,0 +1,112 @@
+openapi: 3.1.0
+info:
+  title: CinaVault 3.0 Service Foundation API
+  version: 3.0.0-alpha.1
+  description: |
+    Loopback-first service contract for CinaVault 3.0. This foundation exposes
+    health and non-destructive volume reconciliation planning only.
+servers:
+  - url: http://127.0.0.1:8097
+    description: Default local-only listener
+paths:
+  /health:
+    get:
+      summary: Return service identity and local bind policy
+      responses:
+        '200':
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /Cinevault/Volumes:
+    get:
+      summary: List known volumes
+      responses:
+        '200':
+          description: Volume list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Volume'
+  /Cinevault/Volumes/ReconcilePlan:
+    post:
+      summary: Produce a non-destructive dry-run volume reconciliation plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReconcileRequest'
+      responses:
+        '200':
+          description: Dry-run plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconcilePlan'
+        '409':
+          description: A non-dry-run request was rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [service, version, contract_version, bind_policy]
+      properties:
+        service: { type: string }
+        version: { type: string }
+        contract_version: { type: string, example: v3alpha1 }
+        bind_policy: { type: string }
+    VolumeRoute:
+      type: object
+      required: [path, priority, healthy]
+      properties:
+        path: { type: string, example: "\\\\nas\\media" }
+        priority: { type: integer, minimum: 1 }
+        healthy: { type: boolean }
+    Volume:
+      type: object
+      required: [id, label, kind, routes, health, sentinel_status, read_only, power_policy]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        kind: { type: string, enum: [smb, nfs, local, iscsi, removable] }
+        routes:
+          type: array
+          items: { $ref: '#/components/schemas/VolumeRoute' }
+        health: { type: string, enum: [online, offline] }
+        sentinel_status: { type: string, enum: [verified, derived_read_only, missing, mismatch, not_checked] }
+        read_only: { type: boolean }
+        power_policy: { type: string, enum: [always_on, spins_down, removable] }
+        last_spin_up_cause: { type: [string, 'null'] }
+    ReconcileRequest:
+      type: object
+      required: [volume, dry_run]
+      properties:
+        volume: { $ref: '#/components/schemas/Volume' }
+        dry_run:
+          type: boolean
+          description: Must be true in the foundation milestone.
+    ReconcilePlan:
+      type: object
+      required: [outcome, dry_run, changes, message]
+      properties:
+        outcome: { type: string, enum: [ready_dry_run, offline, aborted_unverified_volume] }
+        dry_run: { type: boolean, const: true }
+        changes:
+          type: array
+          items: { type: string }
+          description: Empty until real scanning is explicitly approved and implemented.
+        message: { type: string }
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }

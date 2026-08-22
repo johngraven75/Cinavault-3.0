@@ -235,3 +235,6 @@ data/
 !src/data/
 !src/data/**
 installer/
+
+# Generated local verification evidence; committed status lives in build-verification/current-build.json.
+master-evidence/
