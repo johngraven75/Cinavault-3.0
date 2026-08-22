@@ -1,0 +1,15 @@
+{
+  "_plugin": "Trakt (MS-C)",
+  "_key": "jf-trakt",
+  "_category": "Sync",
+  "_platform": "jellyfin",
+  "_description": "Trakt sync plugin for Jellyfin/CinaVault. Syncs watched history, ratings, and watchlist.",
+  "enabled": true,
+  "client_id": "",
+  "client_secret": "",
+  "sync_watched": true,
+  "sync_ratings": true,
+  "sync_watchlist": true,
+  "sync_interval_hours": 24,
+  "scrobble_on_play": true
+}

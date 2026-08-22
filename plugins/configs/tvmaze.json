@@ -1,0 +1,14 @@
+{
+  "_plugin": "TVMaze",
+  "_key": "tvmaze",
+  "_category": "TV Shows",
+  "_description": "TVMaze \u2014 TV show database with episode info, cast, and schedules. No API key required for public data.",
+  "_docs": "https://www.tvmaze.com/api",
+  "enabled": true,
+  "base_url": "https://api.tvmaze.com",
+  "auto_match": true,
+  "nfo_write": true,
+  "episode_metadata": true,
+  "cast_metadata": true,
+  "schedule_sync": true
+}

@@ -1,0 +1,17 @@
+{
+  "_plugin": "Bazarr (MS-A)",
+  "_key": "px-bazarr",
+  "_category": "Subtitles",
+  "_platform": "plex",
+  "_description": "Automated subtitle downloader from 25+ providers.",
+  "enabled": true,
+  "host": "localhost",
+  "port": 6767,
+  "api_key": "",
+  "languages": [
+    "en"
+  ],
+  "auto_download": true,
+  "hearing_impaired": false,
+  "upgrade_subs": true
+}

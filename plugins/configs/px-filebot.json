@@ -1,0 +1,14 @@
+{
+  "_plugin": "FileBot (MS-A)",
+  "_key": "px-filebot",
+  "_category": "Utilities",
+  "_platform": "plex",
+  "_description": "Smart media renaming and organization with metadata-driven naming.",
+  "enabled": true,
+  "rename_format": "{n} ({y})",
+  "db": "TheMovieDB",
+  "lang": "en",
+  "non_strict": true,
+  "action": "move",
+  "conflict": "skip"
+}

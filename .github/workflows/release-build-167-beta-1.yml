@@ -1,0 +1,77 @@
+name: Release Build 167 Beta 1
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/release-build-167-beta-1.yml'
+      - '.github/release-triggers/build-167-beta-1.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-build-167-beta-1
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-and-release:
+    name: Build and publish Windows prerelease
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+
+      - name: Cache Rust build
+        uses: swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate frontend
+        run: npm run build
+
+      - name: Build Tauri installers
+        run: npm run tauri build
+
+      - name: Stage release assets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release-assets | Out-Null
+          Get-ChildItem -Path src-tauri/target/release/bundle -Recurse -File |
+            Where-Object { $_.Extension -in '.exe', '.msi' } |
+            Copy-Item -Destination release-assets
+          $assets = Get-ChildItem release-assets -File
+          if ($assets.Count -eq 0) {
+            throw 'No Windows installer assets were produced.'
+          }
+          $assets | ForEach-Object { Write-Host $_.FullName }
+
+      - name: Publish Build 167 Beta 1 prerelease
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          tag_name: v1.6.7-beta.1
+          name: CinaVault Premium Build 167 Beta 1
+          prerelease: true
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/*.exe
+            release-assets/*.msi

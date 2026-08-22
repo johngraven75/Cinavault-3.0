@@ -1,0 +1,53 @@
+# APIsec scan. Runs only when explicitly dispatched and credentials are configured.
+name: APIsec
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: APIsec project name to scan
+        required: true
+        type: string
+      profile:
+        description: Optional APIsec scan profile
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  trigger-apisec-scan:
+    name: APIsec scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    env:
+      APISEC_USERNAME: ${{ secrets.apisec_username }}
+      APISEC_PASSWORD: ${{ secrets.apisec_password }}
+
+    steps:
+      - name: Validate APIsec configuration
+        shell: bash
+        run: |
+          if [[ -z "$APISEC_USERNAME" || -z "$APISEC_PASSWORD" ]]; then
+            echo "APIsec credentials are not configured. Add apisec_username and apisec_password repository secrets."
+            exit 1
+          fi
+
+      - name: APIsec scan
+        uses: apisec-inc/apisec-run-scan@025432089674a28ba8fb55f8ab06c10215e772ea
+        with:
+          apisec-username: ${{ secrets.apisec_username }}
+          apisec-password: ${{ secrets.apisec_password }}
+          apisec-project: ${{ inputs.project }}
+          apisec-profile: ${{ inputs.profile }}
+          sarif-result-file: apisec-results.sarif
+
+      - name: Import results
+        if: success()
+        uses: github/codeql-action/upload-sarif@f3712979fa5f215279b101dd0a2e3bdfb4353324 # v3
+        with:
+          sarif_file: ./apisec-results.sarif

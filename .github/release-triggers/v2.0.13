@@ -1,0 +1,4 @@
+CinaVault Premium v2.13 Build 1.13 release trigger.
+
+Purpose: publish the repaired Windows runtime after complete frontend, connector,
+backend, Rust, live metadata, packaging, checksum, and release-gate validation.

@@ -1,0 +1,10 @@
+{
+  "_plugin": "Kitana (MS-A)",
+  "_key": "px-kitana",
+  "_category": "Management",
+  "_platform": "plex",
+  "_description": "Web-based plugin manager for MS-A.",
+  "enabled": true,
+  "host": "localhost",
+  "port": 31337
+}

@@ -1,0 +1,131 @@
+/* Build 155 hard media-card sizing fix */
+
+/* Library rows/grids must show many items per row */
+[class*="library"],
+[class*="media"],
+[class*="poster"],
+[class*="movie"] {
+  --cv-poster-card-width: 165px;
+  --cv-poster-card-height: 248px;
+}
+
+/* Any container holding many poster/media cards */
+.media-row,
+.media-list,
+.media-grid,
+.poster-row,
+.poster-list,
+.poster-grid,
+.library-row,
+.library-list,
+.library-grid,
+.movie-row,
+.movie-list,
+.movie-grid,
+[class*="MediaGrid"],
+[class*="mediaGrid"],
+[class*="PosterGrid"],
+[class*="posterGrid"],
+[class*="LibraryGrid"],
+[class*="libraryGrid"] {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 165px)) !important;
+  gap: 14px !important;
+  align-items: start !important;
+  justify-content: start !important;
+}
+
+/* Any card/tile containing poster art */
+.media-card,
+.poster-card,
+.movie-card,
+.library-card,
+.media-tile,
+.poster-tile,
+.movie-tile,
+.library-tile,
+[class*="MediaCard"],
+[class*="mediaCard"],
+[class*="PosterCard"],
+[class*="posterCard"],
+[class*="MovieCard"],
+[class*="movieCard"],
+[class*="LibraryCard"],
+[class*="libraryCard"],
+[class*="MediaTile"],
+[class*="PosterTile"] {
+  width: var(--cv-poster-card-width) !important;
+  max-width: var(--cv-poster-card-width) !important;
+  min-width: var(--cv-poster-card-width) !important;
+  height: auto !important;
+  max-height: 330px !important;
+  flex: 0 0 var(--cv-poster-card-width) !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+}
+
+/* Poster images must keep standard 2:3 poster ratio */
+.media-card img,
+.poster-card img,
+.movie-card img,
+.library-card img,
+.media-tile img,
+.poster-tile img,
+.movie-tile img,
+.library-tile img,
+[class*="MediaCard"] img,
+[class*="mediaCard"] img,
+[class*="PosterCard"] img,
+[class*="posterCard"] img,
+[class*="MovieCard"] img,
+[class*="movieCard"] img,
+[class*="LibraryCard"] img,
+[class*="libraryCard"] img,
+[class*="MediaTile"] img,
+[class*="PosterTile"] img {
+  width: 100% !important;
+  height: var(--cv-poster-card-height) !important;
+  max-height: var(--cv-poster-card-height) !important;
+  aspect-ratio: 2 / 3 !important;
+  object-fit: cover !important;
+}
+
+/* Stop single cards from spanning the full viewport */
+.media-card *,
+.poster-card *,
+.movie-card *,
+.library-card *,
+[class*="MediaCard"] *,
+[class*="PosterCard"] *,
+[class*="LibraryCard"] * {
+  max-width: 100% !important;
+}
+
+/* Responsive mobile fallback */
+@media (max-width: 640px) {
+  .media-row,
+  .media-list,
+  .media-grid,
+  .poster-row,
+  .poster-list,
+  .poster-grid,
+  .library-row,
+  .library-list,
+  .library-grid,
+  .movie-row,
+  .movie-list,
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 145px)) !important;
+  }
+
+  .media-card,
+  .poster-card,
+  .movie-card,
+  .library-card,
+  [class*="MediaCard"],
+  [class*="PosterCard"],
+  [class*="LibraryCard"] {
+    --cv-poster-card-width: 145px;
+    --cv-poster-card-height: 218px;
+  }
+}

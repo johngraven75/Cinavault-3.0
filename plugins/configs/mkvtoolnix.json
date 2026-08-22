@@ -1,0 +1,13 @@
+{
+  "_plugin": "MKVToolNix",
+  "_key": "mkvtoolnix",
+  "_category": "Transcoding",
+  "_description": "Tools for creating, editing, and inspecting Matroska (MKV) files.",
+  "_docs": "https://mkvtoolnix.download/doc/mkvmerge.html",
+  "enabled": true,
+  "default_language": "eng",
+  "generate_chapters": false,
+  "attach_fonts": false,
+  "compression": "none",
+  "track_statistics_tags": false
+}

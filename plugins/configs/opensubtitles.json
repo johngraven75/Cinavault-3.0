@@ -1,0 +1,20 @@
+{
+  "_plugin": "OpenSubtitles",
+  "_key": "opensubtitles",
+  "_category": "Subtitles",
+  "_description": "OpenSubtitles \u2014 largest subtitle database with 6M+ subtitles. Free API key from https://www.opensubtitles.com/en/consumers",
+  "_docs": "https://opensubtitles.stoplight.io/docs/opensubtitles-api",
+  "enabled": true,
+  "api_key": "",
+  "base_url": "https://api.opensubtitles.com/api/v1",
+  "languages": [
+    "en"
+  ],
+  "auto_download": true,
+  "hearing_impaired": false,
+  "foreign_parts_only": false,
+  "machine_translated": false,
+  "ai_translated": false,
+  "trusted_sources_only": true,
+  "max_results": 5
+}

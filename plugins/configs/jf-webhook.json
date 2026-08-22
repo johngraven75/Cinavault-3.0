@@ -1,0 +1,17 @@
+{
+  "_plugin": "Webhook (MS-C)",
+  "_key": "jf-webhook",
+  "_category": "Notifications",
+  "_platform": "jellyfin",
+  "_description": "Send webhook notifications to Discord, Slack, Gotify, Pushover, and any HTTP endpoint.",
+  "enabled": true,
+  "endpoints": [],
+  "notify_on_play": true,
+  "notify_on_stop": true,
+  "notify_on_pause": false,
+  "notify_on_new_item": true,
+  "notify_on_item_added": true,
+  "notify_on_playback_start": true,
+  "template": "discord",
+  "custom_template": ""
+}

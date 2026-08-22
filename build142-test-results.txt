@@ -1,0 +1,47 @@
+[32m✔ Build 140 Google Cast service and clearly marked Cast UI are installed [90m(3.2005ms)[39m[39m
+[32m✔ Build 140 app shell keeps startup, persistence, plugin, and wheel-scroll behavior [90m(2.4977ms)[39m[39m
+[32m✔ Build 140 sidebar keeps every core destination and collapse control [90m(4.7939ms)[39m[39m
+[32m✔ Build 140 header keeps HUD identity, search, clock, fullscreen, and notifications [90m(0.717ms)[39m[39m
+[32m✔ Kodi-inspired CinaVault skins are selectable in Settings [90m(0.9904ms)[39m[39m
+[32m✔ PGMA and Porn Site Nuxt remain exposed as metadata providers [90m(3.7051ms)[39m[39m
+[32m✔ Build 140 routes user-facing metadata commands through metadata_ext at runtime [90m(3.4457ms)[39m[39m
+[32m✔ Build 140 metadata extension handlers are real Tauri commands [90m(2.6309ms)[39m[39m
+[32m✔ Build 140 restored providers remain normalized and listed by extension source [90m(1.9863ms)[39m[39m
+[32m✔ Build 141 poster cards use standard multi-item row sizing [90m(1.7129ms)[39m[39m
+[32m✔ Build 142 poster cards use standard multi-item row sizing [90m(18.4082ms)[39m[39m
+[32m✔ active repository files do not contain stale build-number drift [90m(296.4369ms)[39m[39m
+[32m✔ TITLE_LETTERS exposes the full A-Z selector list [90m(1.5707ms)[39m[39m
+[32m✔ getTitleInitial returns the first A-Z character from the trimmed title [90m(0.4003ms)[39m[39m
+[32m✔ filterItemsByTitleInitial keeps only titles that start with the selected letter [90m(1.9837ms)[39m[39m
+[32m✔ filterItemsByTitleInitial supports all and numeric symbol buckets [90m(0.5753ms)[39m[39m
+[32m✔ buildLibraryPageRequest bounds the initial all-media library load [90m(4.8952ms)[39m[39m
+[32m✔ buildLibraryPageRequest sends the selected media type without loading every row [90m(0.6443ms)[39m[39m
+[32m✔ mergeLibraryPage appends unique media rows across pages [90m(0.676ms)[39m[39m
+[32m✔ hasMoreLibraryPages only continues when a full page was returned [90m(0.6161ms)[39m[39m
+[32m✔ shouldAutoLoadNextLibraryPage keeps full-library loading moving after a full page [90m(0.4912ms)[39m[39m
+[32m✔ canPlayMediaItem accepts real video files [90m(4.1399ms)[39m[39m
+[32m✔ canPlayMediaItem rejects generated chapter images and empty paths [90m(0.4254ms)[39m[39m
+[32m✔ isLibraryDisplayableMediaItem hides generated chapter images from the library [90m(0.3678ms)[39m[39m
+[32m✔ isLibraryDisplayableMediaItem hides sidecar artwork photo rows from the library [90m(0.7515ms)[39m[39m
+[32m✔ formatMetadataTaskProgress clamps percentages and keeps task copy useful [90m(1.5225ms)[39m[39m
+[32m✔ metadataTaskPopupVisible keeps the completion state visible long enough to inform the user [90m(0.3829ms)[39m[39m
+[32m✔ getWheelDeltaPixels preserves pixel deltas for trackpads [90m(1.5863ms)[39m[39m
+[32m✔ getWheelDeltaPixels converts line and page wheel units [90m(0.3077ms)[39m[39m
+[32m✔ getWheelScrolledTop clamps page scrolling to the available range [90m(0.2485ms)[39m[39m
+[32m✔ sanitizeMetadataProviders keeps defaults and repairs malformed persisted providers [90m(3.3286ms)[39m[39m
+[32m✔ getMetadataProviderInitials never throws on missing provider names [90m(0.3797ms)[39m[39m
+[32m✔ matchesPluginSearch tolerates missing description and tags [90m(0.3578ms)[39m[39m
+[32m✔ applyPluginRuntimeState does not mark the whole catalog installed [90m(0.6273ms)[39m[39m
+[32m✔ applyPluginRuntimeState reflects disabled installed plugins [90m(0.3901ms)[39m[39m
+[32m✔ getUnreadStatusMessages returns newest unread messages after the last read index [90m(0.6677ms)[39m[39m
+[32m✔ buildAddXtreamProfileArgs sends serverUrl for the Tauri command [90m(5.9425ms)[39m[39m
+[32m✔ normalizeXtreamServerUrl strips common Xtream endpoint paths to the server base [90m(1.0944ms)[39m[39m
+[32m✔ buildAddXtreamProfileArgs rejects unusable server URLs with a helpful message [90m(1.114ms)[39m[39m
+[34mℹ tests 39[39m
+[34mℹ suites 0[39m
+[34mℹ pass 39[39m
+[34mℹ fail 0[39m
+[34mℹ cancelled 0[39m
+[34mℹ skipped 0[39m
+[34mℹ todo 0[39m
+[34mℹ duration_ms 727.4776[39m

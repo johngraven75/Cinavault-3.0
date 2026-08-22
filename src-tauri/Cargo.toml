@@ -1,0 +1,52 @@
+[package]
+name = "cinavault-3"
+version = "3.0.0"
+description = "CinaVault 3.0 — Windows-native media server and desktop management client"
+authors = ["CinaVault Team"]
+edition = "2021"
+
+[lib]
+name = "cinavault_3_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.2", features = [] }
+serde_json = "1"
+
+[dependencies]
+# Argon2id is required for adaptive, memory-hard remote-access password storage.
+argon2 = "0.5"
+tauri = { version = "2.11.2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-process = "2"
+tauri-plugin-os = "2"
+tauri-plugin-clipboard-manager = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.31", features = ["bundled"] }
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7", features = ["io"] }
+axum = "0.8"
+tower-http = { version = "0.6", features = ["cors"] }
+reqwest = { version = "0.12", features = ["json", "stream", "blocking", "rustls-tls", "cookies"] }
+igd-next = "0.17.1"
+natpmp = { version = "0.5", features = ["tokio"] }
+zip = "2"
+walkdir = "2"
+sha2 = "0.10"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
+glob = "0.3"
+regex = "1"
+percent-encoding = "2"
+dirs = "5"
+env_logger = "0.11"
+open = "5"
+log = "0.4"
+base64 = "0.22"
+
+# Backport RUSTSEC-2024-0429 / GHSA-wrw7-89jp-8q8g without a breaking GTK-rs upgrade.
+[patch.crates-io]
+glib = { path = "vendor/glib-0.18.5" }

@@ -1,0 +1,43 @@
+{
+  "_plugin": "CinaVault Metadata Engine",
+  "_key": "cv-metadata-engine",
+  "_category": "Metadata",
+  "_platform": "cinavault",
+  "_description": "Unified metadata aggregator pulling from 30+ providers with smart conflict resolution.",
+  "enabled": true,
+  "providers": [
+    "tmdb",
+    "omdb",
+    "tvdb",
+    "fanart",
+    "tpdb",
+    "stashdb",
+    "pgma",
+    "porn_site_nuxt",
+    "iafd",
+    "phoenixadult",
+    "trakt",
+    "anidb",
+    "mal",
+    "kitsu",
+    "anilist",
+    "audiodb",
+    "tvmaze"
+  ],
+  "adult_providers": [
+    "tpdb",
+    "stashdb",
+    "pgma",
+    "porn_site_nuxt",
+    "iafd",
+    "phoenixadult"
+  ],
+  "conflict_resolution": "highest_confidence",
+  "merge_strategy": "union",
+  "auto_enrich": true,
+  "poster_download": true,
+  "nfo_write": true,
+  "batch_size": 20,
+  "concurrent_requests": 4,
+  "timeout_seconds": 30
+}

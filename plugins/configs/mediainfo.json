@@ -1,0 +1,12 @@
+{
+  "_plugin": "MediaInfo",
+  "_key": "mediainfo",
+  "_category": "Analysis",
+  "_description": "Detailed technical and tag information about video and audio files.",
+  "_docs": "https://mediaarea.net/en/MediaInfo",
+  "enabled": true,
+  "full_output": false,
+  "output_format": "JSON",
+  "cover_data": false,
+  "language": "en"
+}

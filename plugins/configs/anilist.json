@@ -1,0 +1,15 @@
+{
+  "_plugin": "AniList",
+  "_key": "anilist",
+  "_category": "Anime",
+  "_description": "AniList \u2014 modern anime and manga tracking with GraphQL API. No API key required for public queries.",
+  "_docs": "https://anilist.gitbook.io/anilist-apiv2-docs",
+  "enabled": true,
+  "base_url": "https://graphql.anilist.co",
+  "auto_match": true,
+  "nfo_write": true,
+  "rating_sync": true,
+  "episode_metadata": true,
+  "genre_sync": true,
+  "staff_metadata": true
+}

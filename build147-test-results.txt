@@ -1,0 +1,500 @@
+CinaVault Premium Build 147 Test Results
+Date: Fri Jul  3 00:15:32 EDT 2026
+
+
+✔ Build 140 Google Cast service and clearly marked Cast UI are installed (8.836ms)
+✔ Build 140 app shell keeps startup, persistence, plugin, and wheel-scroll behavior (2.9606ms)
+✔ Build 140 sidebar keeps every core destination and collapse control (7.5944ms)
+✔ Build 140 header keeps HUD identity, search, clock, fullscreen, and notifications (4.5795ms)
+✔ Kodi-inspired CinaVault skins are selectable in Settings (1.9253ms)
+✔ PGMA and Porn Site Nuxt remain exposed as metadata providers (1.5333ms)
+✔ Build 140 routes user-facing metadata commands through metadata_ext at runtime (1.9463ms)
+✔ Build 140 metadata extension handlers are real Tauri commands (1.03ms)
+✔ Build 140 restored providers remain normalized and listed by extension source (0.5429ms)
+✔ Build 141 poster cards use standard multi-item row sizing (1.6341ms)
+✔ Build 142 poster cards use standard multi-item row sizing (2.517ms)
+✔ Build 143 AI Media Agent is permanently enabled and safe (3.7391ms)
+✔ Build 143 media cards are hard-clamped to standard poster size (2.0703ms)
+✔ Build 144 adds proprietary CinaVault Server without removing Jellyfin compatibility (4.6843ms)
+✔ Build 145 AI provider falls back when Hugging Face credentials are missing (11.8766ms)
+✔ Build 145 includes all requested market-leading media server features (2.8262ms)
+✔ Build 147 cleans photo/artwork files from media rows (2.5123ms)
+✔ Build 147 poster cards are standard multi-column size (0.6531ms)
+✔ active repository files do not contain stale build-number drift (223.3215ms)
+✔ TITLE_LETTERS exposes the full A-Z selector list (1.2034ms)
+✔ getTitleInitial returns the first A-Z character from the trimmed title (0.3838ms)
+✔ filterItemsByTitleInitial keeps only titles that start with the selected letter (1.4027ms)
+✔ filterItemsByTitleInitial supports all and numeric symbol buckets (0.2843ms)
+✔ buildLibraryPageRequest bounds the initial all-media library load (3.1737ms)
+✔ buildLibraryPageRequest sends the selected media type without loading every row (0.3024ms)
+✔ mergeLibraryPage appends unique media rows across pages (0.3635ms)
+✔ hasMoreLibraryPages only continues when a full page was returned (0.2721ms)
+✔ shouldAutoLoadNextLibraryPage keeps full-library loading moving after a full page (0.3197ms)
+✔ canPlayMediaItem accepts real video files (2.9595ms)
+✔ canPlayMediaItem rejects generated chapter images and empty paths (0.353ms)
+✔ isLibraryDisplayableMediaItem hides generated chapter images from the library (0.2678ms)
+✔ isLibraryDisplayableMediaItem hides sidecar artwork photo rows from the library (0.7038ms)
+✔ formatMetadataTaskProgress clamps percentages and keeps task copy useful (1.2508ms)
+✔ metadataTaskPopupVisible keeps the completion state visible long enough to inform the user (0.3336ms)
+✔ getWheelDeltaPixels preserves pixel deltas for trackpads (3.2842ms)
+✔ getWheelDeltaPixels converts line and page wheel units (0.2874ms)
+✔ getWheelScrolledTop clamps page scrolling to the available range (0.415ms)
+✔ sanitizeMetadataProviders keeps defaults and repairs malformed persisted providers (1.8813ms)
+✔ getMetadataProviderInitials never throws on missing provider names (0.2704ms)
+✔ matchesPluginSearch tolerates missing description and tags (0.2332ms)
+✔ applyPluginRuntimeState does not mark the whole catalog installed (0.4449ms)
+✔ applyPluginRuntimeState reflects disabled installed plugins (0.212ms)
+✔ getUnreadStatusMessages returns newest unread messages after the last read index (0.2651ms)
+✔ buildAddXtreamProfileArgs sends serverUrl for the Tauri command (3.6886ms)
+✔ normalizeXtreamServerUrl strips common Xtream endpoint paths to the server base (0.5375ms)
+✔ buildAddXtreamProfileArgs rejects unusable server URLs with a helpful message (0.673ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 46
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 510.1308
+
+CinaVault Premium Windows Installer Build
+Repository: C:\Users\johng\CinaVault-Premium\scripts\..
+
+==> Checking required tools
+
+==> Using preinstalled JavaScript dependencies
+
+==> Running TypeScript simulation build
+
+==> Running Vite production build
+[36mvite v6.4.3 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 1857 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                 [39m[1m[2m  3.80 kB[22m[1m[22m[2m │ gzip:  1.43 kB[22m
+[2mdist/[22m[35massets/index-BdGL_PPw.css  [39m[1m[2m 69.70 kB[22m[1m[22m[2m │ gzip: 14.39 kB[22m
+[2mdist/[22m[36massets/tauri-Bm_bm_W6.js   [39m[1m[2m 15.08 kB[22m[1m[22m[2m │ gzip:  3.87 kB[22m[2m │ map: 121.52 kB[22m
+[2mdist/[22m[36massets/ui-DoyzL-Fm.js      [39m[1m[2m 39.15 kB[22m[1m[22m[2m │ gzip:  7.99 kB[22m[2m │ map:  93.16 kB[22m
+[2mdist/[22m[36massets/index-zLoUYRLE.js   [39m[1m[2m225.89 kB[22m[1m[22m[2m │ gzip: 59.34 kB[22m[2m │ map: 612.51 kB[22m
+[2mdist/[22m[36massets/vendor-BZ6I1WcM.js  [39m[1m[2m244.55 kB[22m[1m[22m[2m │ gzip: 80.38 kB[22m[2m │ map: 925.55 kB[22m
+[32m✓ built in 4.98s[39m
+
+==> Running JavaScript surface regression tests
+
+> cinavault-premium@1.0.147 test:build140
+> node --test tests/build140GovernanceSurface.test.mjs tests/buildNumberDriftGuard.test.mjs tests/build140RuntimeRouting.test.mjs
+
+✔ Build 140 app shell keeps startup, persistence, plugin, and wheel-scroll behavior (1.7402ms)
+✔ Build 140 sidebar keeps every core destination and collapse control (1.4277ms)
+✔ Build 140 header keeps HUD identity, search, clock, fullscreen, and notifications (0.8025ms)
+✔ Kodi-inspired CinaVault skins are selectable in Settings (1.3364ms)
+✔ PGMA and Porn Site Nuxt remain exposed as metadata providers (0.8861ms)
+✔ Build 140 routes user-facing metadata commands through metadata_ext at runtime (1.557ms)
+✔ Build 140 metadata extension handlers are real Tauri commands (0.7893ms)
+✔ Build 140 restored providers remain normalized and listed by extension source (0.3946ms)
+✔ active repository files do not contain stale build-number drift (93.4803ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 194.4977
+
+==> Running Rust compile check
+   Compiling cinavault-premium v1.0.147 (C:\Users\johng\CinaVault-Premium\src-tauri)
+warning: function `search_metadata` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-e35bbfd36531a8f4\out/metadata_without_commands.rs:836:14
+    |
+836 | pub async fn search_metadata(
+    |              ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `get_provider_status` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-e35bbfd36531a8f4\out/metadata_without_commands.rs:957:8
+    |
+957 | pub fn get_provider_status(state: State<AppState>) -> Result<serde_json::Value, String> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `set_api_key` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-e35bbfd36531a8f4\out/metadata_without_commands.rs:1098:8
+     |
+1098 | pub fn set_api_key(
+     |        ^^^^^^^^^^^
+
+warning: function `get_api_keys` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-e35bbfd36531a8f4\out/metadata_without_commands.rs:1114:8
+     |
+1114 | pub fn get_api_keys(state: State<AppState>) -> Result<serde_json::Value, String> {
+     |        ^^^^^^^^^^^^
+
+warning: struct `CrawlLink` is never constructed
+  --> src\downloads.rs:29:12
+   |
+29 | pub struct CrawlLink {
+   |            ^^^^^^^^^
+
+warning: function `crawl_media_links` is never used
+   --> src\downloads.rs:179:14
+    |
+179 | pub async fn crawl_media_links(url: String, max_links: Option<usize>) -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^
+
+warning: function `get_supported_media_types` is never used
+   --> src\downloads.rs:237:14
+    |
+237 | pub async fn get_supported_media_types() -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `cinavault-premium` (bin "cinavault-premium") generated 7 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.16s
+
+==> Running scanner ingestion regression tests
+   Compiling cinavault-premium v1.0.147 (C:\Users\johng\CinaVault-Premium\src-tauri)
+warning: unused import: `Path`
+   --> src\scanner.rs:434:21
+    |
+434 |     use std::path::{Path, PathBuf};
+    |                     ^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `search_metadata` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:836:14
+    |
+836 | pub async fn search_metadata(
+    |              ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `get_provider_status` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:957:8
+    |
+957 | pub fn get_provider_status(state: State<AppState>) -> Result<serde_json::Value, String> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `set_api_key` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:1098:8
+     |
+1098 | pub fn set_api_key(
+     |        ^^^^^^^^^^^
+
+warning: function `get_api_keys` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:1114:8
+     |
+1114 | pub fn get_api_keys(state: State<AppState>) -> Result<serde_json::Value, String> {
+     |        ^^^^^^^^^^^^
+
+warning: struct `CrawlLink` is never constructed
+  --> src\downloads.rs:29:12
+   |
+29 | pub struct CrawlLink {
+   |            ^^^^^^^^^
+
+warning: function `crawl_media_links` is never used
+   --> src\downloads.rs:179:14
+    |
+179 | pub async fn crawl_media_links(url: String, max_links: Option<usize>) -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^
+
+warning: function `get_supported_media_types` is never used
+   --> src\downloads.rs:237:14
+    |
+237 | pub async fn get_supported_media_types() -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `cinavault-premium` (bin "cinavault-premium" test) generated 8 warnings (run `cargo fix --bin "cinavault-premium" -p cinavault-premium --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.83s
+     Running unittests src\main.rs (src-tauri\target\debug\deps\cinavault_premium-dbac7817fea06000.exe)
+
+running 6 tests
+test scanner::tests::poster_extraction_runs_for_new_or_blank_poster_items_only ... ok
+test scanner::tests::skips_generated_chapter_images ... ok
+test scanner::tests::keeps_real_media_files ... ok
+test scanner::tests::skips_sidecar_artwork_images ... ok
+test scanner::tests::poster_cache_path_is_stable_and_uses_jpg_extension ... ok
+test scanner::tests::collect_media_files_recurses_and_excludes_generated_artifacts ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 47 filtered out; finished in 0.01s
+
+
+==> Running metadata poster posting regression test
+   Compiling cinavault-premium v1.0.147 (C:\Users\johng\CinaVault-Premium\src-tauri)
+warning: unused import: `Path`
+   --> src\scanner.rs:434:21
+    |
+434 |     use std::path::{Path, PathBuf};
+    |                     ^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `search_metadata` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:836:14
+    |
+836 | pub async fn search_metadata(
+    |              ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `get_provider_status` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:957:8
+    |
+957 | pub fn get_provider_status(state: State<AppState>) -> Result<serde_json::Value, String> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `set_api_key` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:1098:8
+     |
+1098 | pub fn set_api_key(
+     |        ^^^^^^^^^^^
+
+warning: function `get_api_keys` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:1114:8
+     |
+1114 | pub fn get_api_keys(state: State<AppState>) -> Result<serde_json::Value, String> {
+     |        ^^^^^^^^^^^^
+
+warning: struct `CrawlLink` is never constructed
+  --> src\downloads.rs:29:12
+   |
+29 | pub struct CrawlLink {
+   |            ^^^^^^^^^
+
+warning: function `crawl_media_links` is never used
+   --> src\downloads.rs:179:14
+    |
+179 | pub async fn crawl_media_links(url: String, max_links: Option<usize>) -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^
+
+warning: function `get_supported_media_types` is never used
+   --> src\downloads.rs:237:14
+    |
+237 | pub async fn get_supported_media_types() -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `cinavault-premium` (bin "cinavault-premium" test) generated 8 warnings (run `cargo fix --bin "cinavault-premium" -p cinavault-premium --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.38s
+     Running unittests src\main.rs (src-tauri\target\debug\deps\cinavault_premium-dbac7817fea06000.exe)
+
+running 1 test
+test metadata_posting_tests::tests::metadata_and_poster_are_posted_to_media_file_record ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 52 filtered out; finished in 0.01s
+
+
+==> Running PGMA bridge tests
+   Compiling cinavault-premium v1.0.147 (C:\Users\johng\CinaVault-Premium\src-tauri)
+warning: unused import: `Path`
+   --> src\scanner.rs:434:21
+    |
+434 |     use std::path::{Path, PathBuf};
+    |                     ^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `search_metadata` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:836:14
+    |
+836 | pub async fn search_metadata(
+    |              ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `get_provider_status` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:957:8
+    |
+957 | pub fn get_provider_status(state: State<AppState>) -> Result<serde_json::Value, String> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `set_api_key` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:1098:8
+     |
+1098 | pub fn set_api_key(
+     |        ^^^^^^^^^^^
+
+warning: function `get_api_keys` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:1114:8
+     |
+1114 | pub fn get_api_keys(state: State<AppState>) -> Result<serde_json::Value, String> {
+     |        ^^^^^^^^^^^^
+
+warning: struct `CrawlLink` is never constructed
+  --> src\downloads.rs:29:12
+   |
+29 | pub struct CrawlLink {
+   |            ^^^^^^^^^
+
+warning: function `crawl_media_links` is never used
+   --> src\downloads.rs:179:14
+    |
+179 | pub async fn crawl_media_links(url: String, max_links: Option<usize>) -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^
+
+warning: function `get_supported_media_types` is never used
+   --> src\downloads.rs:237:14
+    |
+237 | pub async fn get_supported_media_types() -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `cinavault-premium` (bin "cinavault-premium" test) generated 8 warnings (run `cargo fix --bin "cinavault-premium" -p cinavault-premium --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.46s
+     Running unittests src\main.rs (src-tauri\target\debug\deps\cinavault_premium-dbac7817fea06000.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 53 filtered out; finished in 0.00s
+
+
+==> Running PGMA plugin deployer tests
+   Compiling cinavault-premium v1.0.147 (C:\Users\johng\CinaVault-Premium\src-tauri)
+warning: unused import: `Path`
+   --> src\scanner.rs:434:21
+    |
+434 |     use std::path::{Path, PathBuf};
+    |                     ^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `search_metadata` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:836:14
+    |
+836 | pub async fn search_metadata(
+    |              ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `get_provider_status` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:957:8
+    |
+957 | pub fn get_provider_status(state: State<AppState>) -> Result<serde_json::Value, String> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `set_api_key` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:1098:8
+     |
+1098 | pub fn set_api_key(
+     |        ^^^^^^^^^^^
+
+warning: function `get_api_keys` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\debug\build\cinavault-premium-12902c88eb87fed5\out/metadata_without_commands.rs:1114:8
+     |
+1114 | pub fn get_api_keys(state: State<AppState>) -> Result<serde_json::Value, String> {
+     |        ^^^^^^^^^^^^
+
+warning: struct `CrawlLink` is never constructed
+  --> src\downloads.rs:29:12
+   |
+29 | pub struct CrawlLink {
+   |            ^^^^^^^^^
+
+warning: function `crawl_media_links` is never used
+   --> src\downloads.rs:179:14
+    |
+179 | pub async fn crawl_media_links(url: String, max_links: Option<usize>) -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^
+
+warning: function `get_supported_media_types` is never used
+   --> src\downloads.rs:237:14
+    |
+237 | pub async fn get_supported_media_types() -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `cinavault-premium` (bin "cinavault-premium" test) generated 8 warnings (run `cargo fix --bin "cinavault-premium" -p cinavault-premium --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.32s
+     Running unittests src\main.rs (src-tauri\target\debug\deps\cinavault_premium-dbac7817fea06000.exe)
+
+running 2 tests
+test plugins::tests::rejects_zip_slip_paths ... ok
+test plugins::tests::detects_bundle_path_inside_pgma_archive ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 51 filtered out; finished in 0.00s
+
+
+==> Building Windows installer with Tauri
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `npm run build`
+
+> cinavault-premium@1.0.147 build
+> tsc && vite build
+
+[36mvite v6.4.3 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 1857 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                 [39m[1m[2m  3.80 kB[22m[1m[22m[2m │ gzip:  1.43 kB[22m
+[2mdist/[22m[35massets/index-BdGL_PPw.css  [39m[1m[2m 69.70 kB[22m[1m[22m[2m │ gzip: 14.39 kB[22m
+[2mdist/[22m[36massets/tauri-Bm_bm_W6.js   [39m[1m[2m 15.08 kB[22m[1m[22m[2m │ gzip:  3.87 kB[22m[2m │ map: 121.52 kB[22m
+[2mdist/[22m[36massets/ui-DoyzL-Fm.js      [39m[1m[2m 39.15 kB[22m[1m[22m[2m │ gzip:  7.99 kB[22m[2m │ map:  93.16 kB[22m
+[2mdist/[22m[36massets/index-zLoUYRLE.js   [39m[1m[2m225.89 kB[22m[1m[22m[2m │ gzip: 59.34 kB[22m[2m │ map: 612.51 kB[22m
+[2mdist/[22m[36massets/vendor-BZ6I1WcM.js  [39m[1m[2m244.55 kB[22m[1m[22m[2m │ gzip: 80.38 kB[22m[2m │ map: 925.55 kB[22m
+[32m✓ built in 3.92s[39m
+   Compiling cinavault-premium v1.0.147 (C:\Users\johng\CinaVault-Premium\src-tauri)
+warning: function `search_metadata` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\release\build\cinavault-premium-dc59320b528093c3\out/metadata_without_commands.rs:836:14
+    |
+836 | pub async fn search_metadata(
+    |              ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `get_provider_status` is never used
+   --> C:\Users\johng\CinaVault-Premium\src-tauri\target\release\build\cinavault-premium-dc59320b528093c3\out/metadata_without_commands.rs:957:8
+    |
+957 | pub fn get_provider_status(state: State<AppState>) -> Result<serde_json::Value, String> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `set_api_key` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\release\build\cinavault-premium-dc59320b528093c3\out/metadata_without_commands.rs:1098:8
+     |
+1098 | pub fn set_api_key(
+     |        ^^^^^^^^^^^
+
+warning: function `get_api_keys` is never used
+    --> C:\Users\johng\CinaVault-Premium\src-tauri\target\release\build\cinavault-premium-dc59320b528093c3\out/metadata_without_commands.rs:1114:8
+     |
+1114 | pub fn get_api_keys(state: State<AppState>) -> Result<serde_json::Value, String> {
+     |        ^^^^^^^^^^^^
+
+warning: struct `CrawlLink` is never constructed
+  --> src\downloads.rs:29:12
+   |
+29 | pub struct CrawlLink {
+   |            ^^^^^^^^^
+
+warning: function `crawl_media_links` is never used
+   --> src\downloads.rs:179:14
+    |
+179 | pub async fn crawl_media_links(url: String, max_links: Option<usize>) -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^
+
+warning: function `get_supported_media_types` is never used
+   --> src\downloads.rs:237:14
+    |
+237 | pub async fn get_supported_media_types() -> Result<serde_json::Value, String> {
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `cinavault-premium` (bin "cinavault-premium") generated 7 warnings
+    Finished `release` profile [optimized] target(s) in 1m 30s
+       Built application at: C:\Users\johng\CinaVault-Premium\src-tauri\target\release\cinavault-premium.exe
+        Info Patching C:\Users\johng\CinaVault-Premium\src-tauri\target\release\cinavault-premium.exe with bundle type information: msi
+        Info Target: x64
+     Running candle for "C:\\Users\\johng\\CinaVault-Premium\\src-tauri\\target\\release\\wix\\x64\\main.wxs"
+     Running light to produce C:\Users\johng\CinaVault-Premium\src-tauri\target\release\bundle\msi\CinaVault Premium_1.0.147_x64_en-US.msi
+        Info Patching C:\Users\johng\CinaVault-Premium\src-tauri\target\release\cinavault-premium.exe with bundle type information: nsis
+        Info Target: x64
+     Running makensis to produce C:\Users\johng\CinaVault-Premium\src-tauri\target\release\bundle\nsis\CinaVault Premium_1.0.147_x64-setup.exe
+    Finished 2 bundles at:
+        C:\Users\johng\CinaVault-Premium\src-tauri\target\release\bundle\msi\CinaVault Premium_1.0.147_x64_en-US.msi
+        C:\Users\johng\CinaVault-Premium\src-tauri\target\release\bundle\nsis\CinaVault Premium_1.0.147_x64-setup.exe
+
+
+==> Finding installer outputs
+Installer artifacts:
+ - C:\Users\johng\CinaVault-Premium\src-tauri\target\release\bundle\msi\CinaVault Premium_1.0.147_x64_en-US.msi
+ - C:\Users\johng\CinaVault-Premium\src-tauri\target\release\bundle\nsis\CinaVault Premium_1.0.147_x64-setup.exe
+
+Build complete.

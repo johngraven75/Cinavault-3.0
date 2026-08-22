@@ -1,0 +1,18 @@
+{
+  "_plugin": "PGMA Modernized",
+  "_key": "pgma",
+  "_category": "Adult Metadata",
+  "_description": "PGMA Modernized — local sidecar metadata bridge. Reads .nfo sidecar files and embedded metadata from adult media files. No API key required. Works entirely offline.",
+  "_docs": "https://github.com/DirtyRacer1337/Jellyfin.Plugin.PhoenixAdult",
+  "enabled": true,
+  "mode": "local_sidecar_bridge",
+  "auto_match": true,
+  "nfo_write": true,
+  "nfo_read": true,
+  "poster_download": true,
+  "read_embedded_tags": true,
+  "write_embedded_tags": false,
+  "sidecar_priority": "nfo_first",
+  "fallback_to_filename": true,
+  "normalize_filenames": true
+}

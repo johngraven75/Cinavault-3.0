@@ -1,0 +1,79 @@
+/* CinaVault Premium v2 Build 1.03 — WebView-safe command palette.
+ * The Windows WebView2 compositor can stall when a fixed full-screen layer
+ * combines backdrop-filter with animated scale transforms. Keep the command
+ * system visually cohesive while forcing it onto a simple opaque surface.
+ */
+
+.cv-command-palette-backdrop {
+  background: #02040d !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+  will-change: auto !important;
+  isolation: isolate;
+  contain: layout paint style;
+  color-scheme: dark;
+}
+
+.cv-command-palette {
+  background: #070b1b !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+  will-change: auto !important;
+  backface-visibility: visible !important;
+  -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
+}
+
+.cv-command-palette,
+.cv-command-palette * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.cv-command-input {
+  background: #0b1023 !important;
+  color: #ffffff !important;
+  caret-color: #69f7ff;
+  color-scheme: dark;
+}
+
+.cv-command-input::placeholder {
+  color: rgba(185, 204, 232, 0.58);
+}
+
+.cv-command-item {
+  transform: none !important;
+  filter: none !important;
+  will-change: auto !important;
+}
+
+.cv-command-item:focus-visible {
+  outline: 2px solid rgba(105, 247, 255, 0.75) !important;
+  outline-offset: -2px;
+}
+
+/* Never expose the WebView's default light surface while opening Ctrl+K. */
+html,
+body,
+#root,
+.cv-app,
+.cv-shell-frame,
+.cv-command-deck {
+  background-color: #02040a;
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-command-palette-backdrop,
+  .cv-command-palette,
+  .cv-command-item {
+    transition: none !important;
+    animation: none !important;
+  }
+}

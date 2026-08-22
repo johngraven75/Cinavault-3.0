@@ -1,0 +1,17 @@
+{
+  "_plugin": "HAMA (MS-A)",
+  "_key": "px-hama",
+  "_category": "Metadata",
+  "_platform": "plex",
+  "_description": "HTTP Anidb Metadata Agent \u2014 comprehensive anime metadata combining AniDB, MAL, TVDB, and AniList.",
+  "enabled": true,
+  "anidb_client": "cinavault",
+  "anidb_clientver": 1,
+  "prefer_anidb": true,
+  "use_tvdb_fallback": true,
+  "use_mal_fallback": true,
+  "use_anilist_fallback": true,
+  "poster_language": "en",
+  "download_art": true,
+  "download_theme": false
+}

@@ -1,0 +1,13 @@
+name: Release Compatibility Entry Point
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build-and-release:
+    name: Run current verified installer release
+    uses: ./.github/workflows/windows-installer.yml

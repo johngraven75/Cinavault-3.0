@@ -1,0 +1,17 @@
+{
+  "_plugin": "Porn Site Nuxt",
+  "_key": "porn_site_nuxt",
+  "_aliases": ["IreneHub", "irene_hub", "pornhub_irene", "nuxt_porn_site"],
+  "_category": "Adult Metadata",
+  "_description": "Porn Site Nuxt — local Nuxt.js-based adult metadata server. Runs on localhost:42069 by default. Supports any Nuxt-based adult site scraper. No API key required when running locally.",
+  "_docs": "https://github.com/porn-site-nuxt/porn-site-nuxt",
+  "enabled": true,
+  "base_url": "http://localhost:42069/",
+  "auto_match": true,
+  "poster_download": true,
+  "nfo_write": true,
+  "search_timeout_seconds": 8,
+  "result_limit": 10,
+  "fallback_on_no_match": true,
+  "match_threshold": 0.65
+}

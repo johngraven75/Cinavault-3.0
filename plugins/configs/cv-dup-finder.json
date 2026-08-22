@@ -1,0 +1,15 @@
+{
+  "_plugin": "Duplicate Finder",
+  "_key": "cv-dup-finder",
+  "_category": "Management",
+  "_platform": "cinavault",
+  "_description": "Find and manage duplicate media files using hash comparison.",
+  "enabled": true,
+  "match_by": "hash",
+  "tolerance_mb": 1,
+  "auto_scan": false,
+  "scan_interval_hours": 168,
+  "prefer_higher_resolution": true,
+  "prefer_larger_file": false,
+  "auto_delete": false
+}

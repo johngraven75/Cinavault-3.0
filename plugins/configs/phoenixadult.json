@@ -1,0 +1,20 @@
+{
+  "_plugin": "PhoenixAdult",
+  "_key": "phoenixadult",
+  "_category": "Adult Metadata",
+  "_description": "PhoenixAdult — Jellyfin/Emby-compatible adult metadata provider manifest. Supports 200+ adult sites via filename-based matching. No API key required. Works as a manifest-based provider.",
+  "_docs": "https://github.com/DirtyRacer1337/Jellyfin.Plugin.PhoenixAdult",
+  "enabled": true,
+  "manifest_url": "https://raw.githubusercontent.com/DirtyRacer1337/Jellyfin.Plugin.PhoenixAdult/master/manifest.json",
+  "auto_match": true,
+  "poster_download": true,
+  "nfo_write": true,
+  "performer_metadata": true,
+  "studio_metadata": true,
+  "tag_sync": true,
+  "scene_date": true,
+  "filename_parsing": true,
+  "supported_sites": 200,
+  "fallback_on_no_match": true,
+  "match_threshold": 0.65
+}

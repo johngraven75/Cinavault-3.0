@@ -1,0 +1,15 @@
+{
+  "_plugin": "Intro/Outro Skip Engine",
+  "_key": "cv-intro-skip",
+  "_category": "Playback",
+  "_platform": "cinavault",
+  "_description": "Automatic intro and outro detection with chromaprint audio matching.",
+  "enabled": true,
+  "detection_method": "chromaprint",
+  "min_intro_seconds": 10,
+  "max_intro_seconds": 300,
+  "skip_on_play": true,
+  "show_skip_button": true,
+  "skip_recap": true,
+  "skip_credits": true
+}

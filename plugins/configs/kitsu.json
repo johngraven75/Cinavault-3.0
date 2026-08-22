@@ -1,0 +1,14 @@
+{
+  "_plugin": "Kitsu",
+  "_key": "kitsu",
+  "_category": "Anime",
+  "_description": "Kitsu \u2014 anime and manga tracking with social features. No API key required for public data.",
+  "_docs": "https://kitsu.docs.apiary.io",
+  "enabled": true,
+  "base_url": "https://kitsu.io/api/edge",
+  "auto_match": true,
+  "nfo_write": true,
+  "rating_sync": true,
+  "episode_metadata": true,
+  "genre_sync": true
+}

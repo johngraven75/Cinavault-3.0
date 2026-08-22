@@ -1,0 +1,17 @@
+{
+  "_plugin": "OMDb",
+  "_key": "omdb",
+  "_category": "Movies & TV",
+  "_description": "Open Movie Database \u2014 IMDb-based metadata for movies and TV. Provides ratings, awards, plot, cast. Free API key from https://www.omdbapi.com/apikey.aspx",
+  "_docs": "https://www.omdbapi.com",
+  "enabled": true,
+  "api_key": "",
+  "base_url": "https://www.omdbapi.com",
+  "plot": "full",
+  "auto_match": true,
+  "nfo_write": true,
+  "rating_sync": true,
+  "awards_sync": true,
+  "fallback_on_no_match": true,
+  "match_threshold": 0.75
+}

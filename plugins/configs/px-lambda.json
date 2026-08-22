@@ -1,0 +1,10 @@
+{
+  "_plugin": "Lambda (MS-A)",
+  "_key": "px-lambda",
+  "_category": "Metadata",
+  "_platform": "plex",
+  "_description": "Enhanced metadata agent with comprehensive media identification.",
+  "enabled": true,
+  "prefer_local": false,
+  "fallback_tmdb": true
+}

@@ -1,0 +1,10 @@
+{
+  "_plugin": "Kodi Sync Queue (MS-C)",
+  "_key": "jf-kodi-sync",
+  "_category": "Sync",
+  "_platform": "jellyfin",
+  "_description": "Kodi Sync Queue for real-time library updates to Kodi clients.",
+  "enabled": true,
+  "retain_days": 30,
+  "auto_clean": true
+}

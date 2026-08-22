@@ -1,0 +1,44 @@
+/* CinaVault Premium v2 Build 1 — Future Horizon Skin Foundation */
+
+:root {
+  --cv2-bg: #f7fbff;
+  --cv2-surface: rgba(255, 255, 255, 0.82);
+  --cv2-accent: #00d9ff;
+  --cv2-violet: #7c3cff;
+  --cv2-text: #07111f;
+  --cv2-glow: 0 0 40px rgba(0, 217, 255, 0.24);
+}
+
+.cv2-glass-panel {
+  background: var(--cv2-surface);
+  backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: var(--cv2-glow);
+}
+
+.cv2-holographic-edge {
+  position: relative;
+  overflow: hidden;
+}
+
+.cv2-holographic-edge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(0,217,255,.22), transparent);
+  transform: translateX(-120%);
+  animation: cv2-scan 5s infinite;
+}
+
+@keyframes cv2-scan {
+  45%, 100% { transform: translateX(120%); }
+}
+
+.cv2-page-transition {
+  animation: cv2-enter .42s ease-out;
+}
+
+@keyframes cv2-enter {
+  from { opacity: 0; transform: translateY(18px) scale(.985); filter: blur(8px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}

@@ -1,0 +1,19 @@
+{
+  "_plugin": "yt-dlp",
+  "_key": "yt-dlp",
+  "_category": "Download",
+  "_description": "Premier video downloader supporting 1,000+ sites.",
+  "_docs": "https://github.com/yt-dlp/yt-dlp",
+  "enabled": true,
+  "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+  "output_template": "%(title)s.%(ext)s",
+  "embed_thumbnail": true,
+  "embed_subs": true,
+  "write_info_json": false,
+  "rate_limit": "50M",
+  "concurrent_fragments": 4,
+  "retries": 3,
+  "geo_bypass": true,
+  "no_playlist": false,
+  "age_limit": null
+}

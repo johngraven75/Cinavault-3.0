@@ -1,0 +1,16 @@
+{
+  "_plugin": "FFmpeg",
+  "_key": "ffmpeg",
+  "_category": "Transcoding",
+  "_description": "Industry-standard multimedia framework for transcoding, thumbnails, and format conversion.",
+  "_docs": "https://ffmpeg.org/documentation.html",
+  "enabled": true,
+  "hwaccel": "auto",
+  "threads": 0,
+  "loglevel": "error",
+  "default_video_codec": "libx264",
+  "default_audio_codec": "aac",
+  "default_subtitle_codec": "srt",
+  "thumbnail_quality": 2,
+  "hls_segment_duration": 6
+}

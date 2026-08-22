@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "contractId": "cinavault-platform-parity-v1",
+  "reference": {
+    "repository": "johngraven75/CinaVault-Premium",
+    "release": "v2-build-1.13",
+    "displayName": "v2.13 Build 1.13",
+    "semanticVersion": "2.0.13",
+    "platform": "windows"
+  },
+  "includedRepositories": [
+    "johngraven75/CinaVault-Premium",
+    "johngraven75/cinavault-android",
+    "johngraven75/Cinavault-Server-Premium-Edition-iOS"
+  ],
+  "excludedRepositories": [
+    {
+      "repository": "johngraven75/Cinavault-Reimagined",
+      "reason": "Work in this repository is exclusive to that repository and must not be copied into or out of the Premium parity program."
+    }
+  ],
+  "destinations": [
+    { "id": "library", "label": "Library", "required": true },
+    { "id": "sources", "label": "Media Sources", "required": true },
+    { "id": "downloads", "label": "Downloads", "required": true },
+    { "id": "live-tv", "label": "Live TV", "required": true },
+    { "id": "server", "label": "Server Core", "required": true },
+    { "id": "security", "label": "Security", "required": true },
+    { "id": "remote", "label": "Remote Access", "required": true },
+    { "id": "advanced", "label": "Advanced", "required": true },
+    { "id": "cloud-nas", "label": "Cloud & NAS", "required": true },
+    { "id": "extensions", "label": "Extensions", "required": true },
+    { "id": "ai-autopilot", "label": "AI Autopilot", "required": true },
+    { "id": "hf-models", "label": "HF Models", "required": true },
+    { "id": "settings", "label": "Settings", "required": true }
+  ],
+  "crossPlatformCapabilities": [
+    "account-password-login",
+    "account-access-key-login",
+    "encrypted-session-storage",
+    "authenticated-library",
+    "authenticated-artwork",
+    "authenticated-byte-range-streaming",
+    "opaque-media-identifiers",
+    "local-path-redaction",
+    "compact-adaptive-media-grid",
+    "metadata-and-poster-refresh",
+    "automatic-media-management",
+    "automatic-source-scan-on-add",
+    "casting-device-discovery",
+    "casting-playback-handoff",
+    "automatic-nat-traversal-status",
+    "https-cloud-relay-status",
+    "server-health-and-client-status",
+    "downloads-and-import-status",
+    "live-tv-navigation",
+    "security-and-privacy-controls",
+    "cloud-and-nas-controls",
+    "extension-and-provider-controls",
+    "advanced-diagnostics",
+    "persistent-settings",
+    "global-command-search",
+    "runtime-error-recovery",
+    "reduced-motion-support"
+  ],
+  "visualContract": {
+    "designSystem": "CinaVault spatial command environment",
+    "background": "explicit dark surface on every root, overlay, dialog, loading state, and transition frame",
+    "accents": ["electric-cyan", "orchid", "magenta", "emerald", "solar"],
+    "navigation": "adaptive rail or sidebar on wide layouts and compact bottom navigation on narrow layouts",
+    "commandSearch": "searchable destination command surface with keyboard shortcut where the platform supports hardware keyboards",
+    "mediaGrid": "compact responsive poster cards; Windows targets eight cards per desktop row and mobile adapts by width",
+    "motion": "cohesive motion without full-screen blur plus scale composition; reduced-motion preference must be honored",
+    "errorState": "branded dark recovery surface that preserves data and provides a safe return path"
+  },
+  "optionParity": {
+    "rule": "Every user-visible option introduced on one included platform must be represented on the other included platforms unless the contract records an explicit platform limitation and equivalent control.",
+    "platformLimitationsRequire": [
+      "documented reason",
+      "equivalent user outcome",
+      "regression coverage"
+    ]
+  },
+  "defectParity": [
+    {
+      "id": "CVP-001",
+      "title": "Menu transition white or pale screen",
+      "requiredOutcome": "Navigation cannot strand the interface on a blank surface; root surfaces stay dark and failures recover safely."
+    },
+    {
+      "id": "CVP-002",
+      "title": "Ctrl or Command K command surface compositor stall",
+      "requiredOutcome": "The command surface uses an opaque dark background and avoids full-screen backdrop blur combined with scale transforms."
+    },
+    {
+      "id": "CVP-003",
+      "title": "Source added without immediate scan",
+      "requiredOutcome": "Adding or authorizing a source initiates validation, scan, enrichment, and visible library refresh."
+    },
+    {
+      "id": "CVP-004",
+      "title": "Metadata or poster not appearing on media card",
+      "requiredOutcome": "Enrichment persists artwork and metadata and refreshes the visible card without restart."
+    },
+    {
+      "id": "CVP-005",
+      "title": "Oversized one-card-per-row library",
+      "requiredOutcome": "The library uses compact adaptive poster cards with dense layouts appropriate to the device width."
+    },
+    {
+      "id": "CVP-006",
+      "title": "Remote API exposes file names or local paths",
+      "requiredOutcome": "Remote clients receive opaque media keys and authenticated URLs only; local paths are never returned."
+    },
+    {
+      "id": "CVP-007",
+      "title": "Remote connection unavailable behind NAT",
+      "requiredOutcome": "Clients show automatic direct traversal status and use an HTTPS relay fallback when direct access is unavailable."
+    },
+    {
+      "id": "CVP-008",
+      "title": "Rendering failure blanks entire application",
+      "requiredOutcome": "A platform-appropriate error boundary or recovery host preserves settings and library state and offers safe recovery."
+    },
+    {
+      "id": "CVP-009",
+      "title": "Platform design or option drift",
+      "requiredOutcome": "Design, functions, and user-visible options are compared against this contract in CI before release."
+    }
+  ],
+  "changePolicy": {
+    "fullFileReplacementsOnly": true,
+    "noRegressions": true,
+    "crossPlatformAuditRequired": true,
+    "releaseRule": "A Windows design, function, option, or defect change creates matching Android and iOS parity work before the parity program is considered complete."
+  }
+}

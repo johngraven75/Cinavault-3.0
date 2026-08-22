@@ -1,0 +1,1020 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CinaVault Premium — Kodi Skin Rewrite  (Build 155)
+   Covers all 5 Kodi-origin themes:
+     kodi_estuary_cinema  · kodi_aeon_nox_lux  · kodi_arctic_zephyr
+     kodi_titan_bingie_stream  · kodi_amber_home
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Shared Kodi layout tokens ─────────────────────────────────────────── */
+[data-theme^="kodi_"] {
+  --kodi-hero-h: 420px;
+  --kodi-shelf-gap: 16px;
+  --kodi-card-w: 160px;
+  --kodi-card-h: 240px;
+  --kodi-card-radius: 10px;
+  --kodi-poster-radius: 8px;
+  --kodi-transition: 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --kodi-spring: 380ms cubic-bezier(0.16, 1, 0.3, 1);
+  --kodi-shadow-card: 0 8px 32px rgba(0, 0, 0, 0.55);
+  --kodi-shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.72);
+  --kodi-focus-ring: 0 0 0 2px var(--cv-accent);
+}
+
+/* ── App shell background per theme ────────────────────────────────────── */
+
+/* Estuary — deep navy blue */
+[data-theme="kodi_estuary_cinema"] .app-shell.cv-app {
+  background:
+    radial-gradient(
+      ellipse at 20% 0%,
+      rgba(0, 168, 215, 0.18) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 100%,
+      rgba(0, 120, 168, 0.12) 0%,
+      transparent 45%
+    ),
+    linear-gradient(160deg, #07131f 0%, #0b1f30 55%, #071520 100%);
+}
+[data-theme="kodi_estuary_cinema"] .app-shell.cv-app::before {
+  background:
+    linear-gradient(rgba(0, 168, 215, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 168, 215, 0.05) 1px, transparent 1px);
+  background-size: 52px 52px;
+  opacity: 0.6;
+}
+
+/* Aeon Nox — near-black cinematic silver */
+[data-theme="kodi_aeon_nox_lux"] .app-shell.cv-app {
+  background:
+    radial-gradient(
+      ellipse at 15% 5%,
+      rgba(127, 183, 255, 0.12) 0%,
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse at 85% 95%,
+      rgba(39, 95, 186, 0.1) 0%,
+      transparent 40%
+    ),
+    linear-gradient(160deg, #06080d 0%, #0d1018 55%, #080b12 100%);
+}
+[data-theme="kodi_aeon_nox_lux"] .app-shell.cv-app::before {
+  background:
+    linear-gradient(rgba(127, 183, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 183, 255, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.5;
+}
+
+/* Arctic Zephyr — icy minimal */
+[data-theme="kodi_arctic_zephyr"] .app-shell.cv-app {
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(158, 216, 255, 0.14) 0%,
+      transparent 50%
+    ),
+    linear-gradient(180deg, #0a1118 0%, #0d1822 60%, #0a1118 100%);
+}
+[data-theme="kodi_arctic_zephyr"] .app-shell.cv-app::before {
+  background:
+    linear-gradient(rgba(158, 216, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(158, 216, 255, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.55;
+}
+
+/* Titan Bingie — streaming red-black */
+[data-theme="kodi_titan_bingie_stream"] .app-shell.cv-app {
+  background:
+    radial-gradient(
+      ellipse at 10% 5%,
+      rgba(229, 9, 20, 0.14) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 90% 90%,
+      rgba(178, 7, 16, 0.08) 0%,
+      transparent 38%
+    ),
+    linear-gradient(160deg, #070707 0%, #0d0808 55%, #070707 100%);
+}
+
+/* Amber Home — warm living-room */
+[data-theme="kodi_amber_home"] .app-shell.cv-app {
+  background:
+    radial-gradient(
+      ellipse at 20% 10%,
+      rgba(245, 158, 11, 0.14) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 80% 90%,
+      rgba(196, 111, 0, 0.1) 0%,
+      transparent 40%
+    ),
+    linear-gradient(160deg, #120d08 0%, #1a1108 55%, #120d08 100%);
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+[data-theme^="kodi_"] .cv-sidebar {
+  border-right: 1px solid rgba(var(--cv-accent-rgb, 0, 168, 215), 0.15) !important;
+  background: var(--cv-panel) !important;
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+}
+
+[data-theme^="kodi_"] .cv-sidebar-item {
+  border-radius: 8px;
+  margin: 2px 8px;
+  padding: 10px 14px;
+  transition:
+    background var(--kodi-transition),
+    color var(--kodi-transition);
+  color: var(--cv-subtext);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+[data-theme^="kodi_"] .cv-sidebar-item:hover {
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.12);
+  color: var(--cv-text);
+}
+[data-theme^="kodi_"] .cv-sidebar-item.active {
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.2);
+  color: var(--cv-accent);
+  font-weight: 700;
+}
+[data-theme^="kodi_"] .cv-sidebar-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--cv-accent);
+  border-radius: 0 3px 3px 0;
+}
+[data-theme^="kodi_"] .cv-sidebar-item {
+  position: relative;
+}
+
+/* ── Header / Topbar ────────────────────────────────────────────────────── */
+[data-theme^="kodi_"] .cv-header,
+[data-theme^="kodi_"] .cyber-header {
+  background: var(--cv-panel) !important;
+  border-bottom: 1px solid rgba(var(--cv-accent-rgb, 0, 168, 215), 0.15) !important;
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* ── Kodi Hero Banner ───────────────────────────────────────────────────── */
+.kodi-hero {
+  position: relative;
+  width: 100%;
+  height: var(--kodi-hero-h);
+  overflow: hidden;
+  border-radius: 0 0 16px 16px;
+  flex-shrink: 0;
+}
+.kodi-hero-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: brightness(0.55) saturate(1.1);
+  transition: opacity 0.6s ease;
+}
+.kodi-hero-backdrop-fallback {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at 40% 40%,
+      rgba(var(--cv-accent-rgb, 0, 168, 215), 0.22),
+      transparent 60%
+    ),
+    var(--cv-panel-2);
+}
+.kodi-hero-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.88) 0%,
+      rgba(0, 0, 0, 0.45) 45%,
+      transparent 75%
+    ),
+    linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, transparent 40%);
+}
+.kodi-hero-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 32px 40px;
+  max-width: 560px;
+}
+.kodi-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: var(--cv-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.kodi-hero-title {
+  font-size: clamp(22px, 3.5vw, 36px);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+}
+.kodi-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.kodi-hero-meta-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+}
+.kodi-hero-overview {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.55;
+  margin-bottom: 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kodi-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kodi-btn-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  background: var(--cv-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition:
+    background var(--kodi-transition),
+    transform var(--kodi-transition);
+  box-shadow: 0 4px 20px rgba(var(--cv-accent-rgb, 0, 168, 215), 0.35);
+}
+.kodi-btn-play:hover {
+  background: var(--cv-accent-2);
+  transform: translateY(-1px);
+}
+.kodi-btn-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  transition: background var(--kodi-transition);
+  backdrop-filter: blur(8px);
+}
+.kodi-btn-info:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Hero dots indicator */
+.kodi-hero-dots {
+  position: absolute;
+  bottom: 20px;
+  right: 28px;
+  display: flex;
+  gap: 6px;
+}
+.kodi-hero-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition:
+    background var(--kodi-transition),
+    transform var(--kodi-transition);
+}
+.kodi-hero-dot.active {
+  background: var(--cv-accent);
+  transform: scale(1.3);
+}
+
+/* ── Kodi Shelf (horizontal scroll row) ────────────────────────────────── */
+.kodi-section {
+  padding: 0 24px;
+}
+.kodi-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.kodi-section-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--cv-text);
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kodi-section-title-accent {
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--cv-accent);
+  flex-shrink: 0;
+}
+.kodi-section-count {
+  font-size: 11px;
+  color: var(--cv-subtext);
+  font-weight: 500;
+}
+.kodi-see-all {
+  font-size: 11px;
+  color: var(--cv-accent);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background var(--kodi-transition);
+  border: none;
+  background: transparent;
+}
+.kodi-see-all:hover {
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.12);
+}
+
+.kodi-shelf {
+  display: flex;
+  gap: var(--kodi-shelf-gap);
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.kodi-shelf::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Kodi Poster Card ───────────────────────────────────────────────────── */
+.kodi-card {
+  flex-shrink: 0;
+  width: var(--kodi-card-w);
+  border-radius: var(--kodi-card-radius);
+  background: var(--cv-panel);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition:
+    transform var(--kodi-spring),
+    box-shadow var(--kodi-spring),
+    border-color var(--kodi-transition);
+  position: relative;
+}
+.kodi-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: var(--kodi-shadow-hover);
+  border-color: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.35);
+  z-index: 10;
+}
+.kodi-card:focus-visible {
+  outline: none;
+  box-shadow: var(--kodi-focus-ring), var(--kodi-shadow-hover);
+}
+
+.kodi-poster {
+  width: 100%;
+  height: var(--kodi-card-h);
+  object-fit: cover;
+  display: block;
+  border-radius: var(--kodi-poster-radius) var(--kodi-poster-radius) 0 0;
+  background: var(--cv-panel-2);
+}
+.kodi-poster-placeholder {
+  width: 100%;
+  height: var(--kodi-card-h);
+  background: var(--cv-panel-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cv-subtext);
+  border-radius: var(--kodi-poster-radius) var(--kodi-poster-radius) 0 0;
+}
+.kodi-poster-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--kodi-card-h);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, transparent 45%);
+  pointer-events: none;
+}
+.kodi-card-badges {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kodi-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 800;
+}
+.kodi-badge-verified {
+  background: rgba(0, 200, 120, 0.25);
+  border: 1px solid rgba(0, 200, 120, 0.45);
+  color: #4ade80;
+}
+.kodi-badge-favorite {
+  background: rgba(var(--cv-accent-rgb, 245, 158, 11), 0.22);
+  border: 1px solid rgba(var(--cv-accent-rgb, 245, 158, 11), 0.4);
+  color: var(--cv-gold);
+}
+.kodi-badge-resolution {
+  position: absolute;
+  bottom: calc(var(--kodi-card-h) - 28px);
+  left: 8px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--cv-accent);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.kodi-card-info {
+  padding: 10px 10px 12px;
+}
+.kodi-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cv-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.kodi-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--cv-subtext);
+  flex-wrap: wrap;
+}
+.kodi-card-genre {
+  font-size: 10px;
+  color: var(--cv-subtext);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 3px;
+}
+
+/* Hover quick-action overlay */
+.kodi-card-hover-actions {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity var(--kodi-transition);
+  border-radius: var(--kodi-card-radius);
+}
+.kodi-card:hover .kodi-card-hover-actions {
+  opacity: 1;
+}
+.kodi-quick-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 6px;
+  background: var(--cv-accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background var(--kodi-transition);
+}
+.kodi-quick-play:hover {
+  background: var(--cv-accent-2);
+}
+.kodi-quick-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: background var(--kodi-transition);
+}
+.kodi-quick-meta:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ── Kodi Poster Wall (grid view) ───────────────────────────────────────── */
+.kodi-poster-wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--kodi-card-w), 1fr));
+  gap: 16px;
+  padding: 0 24px 24px;
+}
+
+/* ── Kodi Detail Panel (right-side info drawer) ─────────────────────────── */
+.kodi-detail-panel {
+  background: var(--cv-panel);
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px 0 0 12px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  min-width: 280px;
+  max-width: 340px;
+}
+.kodi-detail-poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: var(--kodi-shadow-card);
+}
+.kodi-detail-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--cv-text);
+  line-height: 1.25;
+}
+.kodi-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--cv-subtext);
+}
+.kodi-detail-chip {
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--cv-panel-2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--cv-subtext);
+  font-size: 10px;
+  font-weight: 600;
+}
+.kodi-detail-chip.accent {
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.15);
+  border-color: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.3);
+  color: var(--cv-accent);
+}
+.kodi-detail-overview {
+  font-size: 12px;
+  color: var(--cv-subtext);
+  line-height: 1.6;
+}
+.kodi-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.kodi-detail-row:last-child {
+  border-bottom: none;
+}
+.kodi-detail-row-label {
+  color: var(--cv-subtext);
+  font-weight: 500;
+}
+.kodi-detail-row-value {
+  color: var(--cv-text);
+  font-weight: 600;
+  text-align: right;
+  max-width: 60%;
+}
+.kodi-detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.kodi-detail-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background var(--kodi-transition),
+    transform var(--kodi-transition);
+  border: none;
+}
+.kodi-detail-btn:hover {
+  transform: translateY(-1px);
+}
+.kodi-detail-btn.primary {
+  background: var(--cv-accent);
+  color: #fff;
+}
+.kodi-detail-btn.primary:hover {
+  background: var(--cv-accent-2);
+}
+.kodi-detail-btn.secondary {
+  background: var(--cv-panel-2);
+  color: var(--cv-text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.kodi-detail-btn.secondary:hover {
+  background: var(--cv-panel-3);
+}
+
+/* ── Kodi Filter Bar ────────────────────────────────────────────────────── */
+.kodi-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+}
+.kodi-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+.kodi-filter-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--cv-panel);
+  color: var(--cv-subtext);
+  transition:
+    background var(--kodi-transition),
+    color var(--kodi-transition),
+    border-color var(--kodi-transition);
+  white-space: nowrap;
+}
+.kodi-filter-chip:hover {
+  background: var(--cv-panel-2);
+  color: var(--cv-text);
+}
+.kodi-filter-chip.active {
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.18);
+  border-color: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.4);
+  color: var(--cv-accent);
+}
+
+/* ── Kodi Alphabet Bar ──────────────────────────────────────────────────── */
+.kodi-alpha-bar {
+  display: flex;
+  gap: 2px;
+  padding: 0 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.kodi-alpha-bar::-webkit-scrollbar {
+  display: none;
+}
+.kodi-alpha-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--cv-subtext);
+  transition:
+    background var(--kodi-transition),
+    color var(--kodi-transition);
+}
+.kodi-alpha-btn:hover {
+  background: var(--cv-panel);
+  color: var(--cv-text);
+}
+.kodi-alpha-btn.active {
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.18);
+  color: var(--cv-accent);
+}
+
+/* ── Kodi Stats Row ─────────────────────────────────────────────────────── */
+.kodi-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 0 24px;
+}
+.kodi-stat-card {
+  background: var(--cv-panel);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: border-color var(--kodi-transition);
+}
+.kodi-stat-card:hover {
+  border-color: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.25);
+}
+.kodi-stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.12);
+  border: 1px solid rgba(var(--cv-accent-rgb, 0, 168, 215), 0.22);
+  color: var(--cv-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.kodi-stat-label {
+  font-size: 10px;
+  color: var(--cv-subtext);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+.kodi-stat-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--cv-text);
+  line-height: 1;
+}
+.kodi-stat-detail {
+  font-size: 10px;
+  color: var(--cv-subtext);
+  margin-top: 3px;
+}
+
+/* ── Kodi Metadata NFO badge ────────────────────────────────────────────── */
+.kodi-nfo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: rgba(0, 200, 120, 0.15);
+  border: 1px solid rgba(0, 200, 120, 0.3);
+  color: #4ade80;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.kodi-poster-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.15);
+  border: 1px solid rgba(var(--cv-accent-rgb, 0, 168, 215), 0.3);
+  color: var(--cv-accent);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ── Kodi Home Layout wrapper ───────────────────────────────────────────── */
+.kodi-home {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-bottom: 40px;
+  overflow-y: auto;
+  height: 100%;
+}
+.kodi-home::-webkit-scrollbar {
+  width: 4px;
+}
+.kodi-home::-webkit-scrollbar-track {
+  background: transparent;
+}
+.kodi-home::-webkit-scrollbar-thumb {
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.25);
+  border-radius: 4px;
+}
+
+/* ── Kodi view toggle ───────────────────────────────────────────────────── */
+.kodi-view-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--cv-panel);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.kodi-view-btn {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: var(--cv-subtext);
+  cursor: pointer;
+  transition:
+    background var(--kodi-transition),
+    color var(--kodi-transition);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.kodi-view-btn.active {
+  background: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.18);
+  color: var(--cv-accent);
+}
+
+/* ── Kodi search bar ────────────────────────────────────────────────────── */
+.kodi-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--cv-panel);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition:
+    border-color var(--kodi-transition),
+    box-shadow var(--kodi-transition);
+  margin: 0 24px;
+}
+.kodi-search-bar:focus-within {
+  border-color: rgba(var(--cv-accent-rgb, 0, 168, 215), 0.4);
+  box-shadow: 0 0 0 3px rgba(var(--cv-accent-rgb, 0, 168, 215), 0.1);
+}
+.kodi-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--cv-text);
+  font-size: 13px;
+}
+.kodi-search-input::placeholder {
+  color: var(--cv-subtext);
+}
+
+/* ── Kodi enrichment progress bar ──────────────────────────────────────── */
+.kodi-enrich-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--cv-panel);
+  border: 1px solid rgba(var(--cv-accent-rgb, 0, 168, 215), 0.2);
+  margin: 0 24px;
+}
+.kodi-enrich-progress {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.kodi-enrich-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--cv-accent);
+  transition: width 0.4s ease;
+}
+
+/* ── Responsive tweaks ──────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  :root {
+    --kodi-hero-h: 300px;
+    --kodi-card-w: 130px;
+    --kodi-card-h: 195px;
+  }
+  .kodi-hero-content {
+    padding: 20px 20px;
+  }
+  .kodi-section {
+    padding: 0 16px;
+  }
+  .kodi-poster-wall {
+    padding: 0 16px 20px;
+    gap: 12px;
+  }
+  .kodi-stats-row {
+    padding: 0 16px;
+  }
+  .kodi-search-bar {
+    margin: 0 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --kodi-hero-h: 240px;
+    --kodi-card-w: 110px;
+    --kodi-card-h: 165px;
+  }
+  .kodi-hero-overview {
+    display: none;
+  }
+  .kodi-detail-panel {
+    min-width: 100%;
+    max-width: 100%;
+    border-radius: 12px;
+  }
+}
+
+/* ── Kodi accent RGB helpers (for rgba() usage) ─────────────────────────── */
+/* These are set by applyTheme() via JS — fallbacks defined here */
+[data-theme="kodi_estuary_cinema"] {
+  --cv-accent-rgb: 0, 168, 215;
+}
+[data-theme="kodi_aeon_nox_lux"] {
+  --cv-accent-rgb: 127, 183, 255;
+}
+[data-theme="kodi_arctic_zephyr"] {
+  --cv-accent-rgb: 158, 216, 255;
+}
+[data-theme="kodi_titan_bingie_stream"] {
+  --cv-accent-rgb: 229, 9, 20;
+}
+[data-theme="kodi_amber_home"] {
+  --cv-accent-rgb: 245, 158, 11;
+}

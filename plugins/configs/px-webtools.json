@@ -1,0 +1,11 @@
+{
+  "_plugin": "WebTools (MS-A)",
+  "_key": "px-webtools",
+  "_category": "Management",
+  "_platform": "plex",
+  "_description": "Administrative toolkit for MS-A with subtitle management and log viewer.",
+  "enabled": true,
+  "port": 33400,
+  "auto_update": true,
+  "log_viewer": true
+}

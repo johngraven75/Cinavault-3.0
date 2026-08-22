@@ -1,0 +1,135 @@
+/* Larger library cards with fewer cards per row. Loaded after the base HUD styles. */
+.cyber-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.cyber-grid .cyber-card {
+  min-width: 0;
+  min-height: 390px;
+}
+
+.cyber-grid .cyber-card img,
+.cyber-grid .cyber-card [data-poster-fallback="true"] {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  min-height: 300px;
+  object-fit: cover;
+}
+
+/* Selected library item becomes a 3D holographic card. */
+.cyber-home section.grid > aside.cyber-terminal-panel {
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  isolation: isolate;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  border-color: rgba(0, 245, 255, 0.5);
+  background:
+    linear-gradient(145deg, rgba(0, 245, 255, 0.12), rgba(189, 0, 255, 0.1) 46%, rgba(5, 5, 10, 0.94)),
+    rgba(5, 5, 10, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 30px rgba(0, 245, 255, 0.28),
+    18px 24px 70px rgba(0, 0, 0, 0.62),
+    -10px -8px 45px rgba(189, 0, 255, 0.18);
+  transform: rotateY(-5deg) rotateX(2deg) translateZ(0);
+  transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+}
+
+.cyber-home section.grid > aside.cyber-terminal-panel:hover,
+.cyber-home section.grid > aside.cyber-terminal-panel:focus-within {
+  transform: rotateY(0deg) rotateX(0deg) translateZ(18px);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 42px rgba(0, 245, 255, 0.4),
+    0 26px 86px rgba(0, 0, 0, 0.7),
+    0 0 52px rgba(189, 0, 255, 0.24);
+}
+
+.cyber-home section.grid > aside.cyber-terminal-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  background:
+    linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.18), transparent),
+    repeating-linear-gradient(0deg, transparent 0 5px, rgba(255, 255, 255, 0.025) 6px);
+  background-size: 220% 100%, 100% 100%;
+  animation: selectedCardHoloSweep 4.8s linear infinite;
+  mix-blend-mode: screen;
+}
+
+.cyber-home section.grid > aside.cyber-terminal-panel > * {
+  position: relative;
+  z-index: 2;
+  transform: translateZ(28px);
+}
+
+.cyber-home section.grid > aside.cyber-terminal-panel img,
+.cyber-home section.grid > aside.cyber-terminal-panel [data-poster-fallback="true"] {
+  transform: translateZ(46px);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55), 0 0 26px rgba(0, 245, 255, 0.2);
+}
+
+@keyframes selectedCardHoloSweep {
+  from { background-position: 140% 0, 0 0; }
+  to { background-position: -120% 0, 0 0; }
+}
+
+@media (min-width: 1280px) {
+  .cyber-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1680px) {
+  .cyber-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1279px) and (min-width: 768px) {
+  .cyber-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .cyber-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cyber-grid .cyber-card {
+    min-height: 320px;
+  }
+
+  .cyber-grid .cyber-card img,
+  .cyber-grid .cyber-card [data-poster-fallback="true"] {
+    min-height: 230px;
+  }
+
+  .cyber-home section.grid > aside.cyber-terminal-panel {
+    position: relative;
+    top: auto;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cyber-home section.grid > aside.cyber-terminal-panel,
+  .cyber-home section.grid > aside.cyber-terminal-panel:hover,
+  .cyber-home section.grid > aside.cyber-terminal-panel:focus-within {
+    transform: none;
+    transition: none;
+  }
+
+  .cyber-home section.grid > aside.cyber-terminal-panel::after {
+    animation: none;
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "_plugin": "Cinemeta",
+  "_key": "cinemeta",
+  "_category": "Movies & TV",
+  "_description": "Cinemeta \u2014 Stremio's metadata addon for movies and TV shows. No API key required.",
+  "_docs": "https://v3-cinemeta.strem.io/manifest.json",
+  "enabled": true,
+  "base_url": "https://v3-cinemeta.strem.io",
+  "auto_match": true,
+  "poster_download": true
+}

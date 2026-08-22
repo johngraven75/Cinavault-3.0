@@ -1,0 +1,16 @@
+{
+  "_plugin": "MyAnimeList",
+  "_key": "mal",
+  "_category": "Anime",
+  "_description": "MyAnimeList \u2014 largest anime and manga database. Free API key from https://myanimelist.net/apiconfig",
+  "_docs": "https://myanimelist.net/apiconfig/references/api/v2",
+  "enabled": true,
+  "client_id": "",
+  "base_url": "https://api.myanimelist.net/v2",
+  "auto_match": true,
+  "nfo_write": true,
+  "rating_sync": true,
+  "episode_metadata": true,
+  "staff_metadata": true,
+  "genre_sync": true
+}

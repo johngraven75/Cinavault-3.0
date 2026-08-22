@@ -1,0 +1,3 @@
+CinaVault Premium Build 168
+Version: 1.6.8
+Purpose: trusted pull request trigger for Windows installer workflow

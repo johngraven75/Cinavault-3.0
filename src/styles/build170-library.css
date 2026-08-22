@@ -1,0 +1,77 @@
+/* CinaVault Premium Build 170 — compact eight-card library density */
+
+.cyber-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.cyber-card {
+  min-width: 0;
+  border-radius: 11px;
+}
+
+.cyber-card .cyber-poster {
+  aspect-ratio: 2 / 3;
+}
+
+.cyber-card > .relative.z-10 {
+  padding: 0.55rem 0.6rem 0.65rem;
+}
+
+.cyber-card h4 {
+  font-size: 0.72rem;
+  line-height: 1rem;
+}
+
+.cyber-card-actions {
+  gap: 0.25rem;
+  padding: 0.38rem;
+}
+
+.cyber-card-actions .cyber-button {
+  min-height: 1.85rem;
+  padding: 0.3rem 0.35rem;
+  font-size: 0.55rem;
+  letter-spacing: 0.035em;
+}
+
+.cyber-card-actions .metadata-action-label {
+  display: none;
+}
+
+@media (min-width: 560px) {
+  .cyber-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 720px) {
+  .cyber-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .cyber-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1080px) {
+  .cyber-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1260px) {
+  .cyber-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1560px) {
+  .cyber-grid {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+  }
+}

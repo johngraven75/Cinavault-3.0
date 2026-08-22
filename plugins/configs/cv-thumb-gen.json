@@ -1,0 +1,16 @@
+{
+  "_plugin": "Smart Thumbnail Generator",
+  "_key": "cv-thumb-gen",
+  "_category": "Artwork",
+  "_platform": "cinavault",
+  "_description": "AI-enhanced thumbnail generation with scene detection.",
+  "enabled": true,
+  "interval_seconds": 300,
+  "max_thumbs_per_item": 5,
+  "scene_detection": true,
+  "face_detection": false,
+  "composition_score": true,
+  "output_format": "jpg",
+  "quality": 85,
+  "skip_existing": true
+}

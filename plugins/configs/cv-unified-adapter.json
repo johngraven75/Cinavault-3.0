@@ -1,0 +1,12 @@
+{
+  "_plugin": "CinaVault Unified Adapter",
+  "_key": "cv-unified-adapter",
+  "_category": "Utilities",
+  "_platform": "cinavault",
+  "_description": "Core compatibility layer translating MS-C, MS-B, and MS-A plugin APIs to CinaVault's unified interface.",
+  "enabled": true,
+  "compat_mode": "auto",
+  "api_translation": true,
+  "event_bridge": true,
+  "log_api_calls": false
+}

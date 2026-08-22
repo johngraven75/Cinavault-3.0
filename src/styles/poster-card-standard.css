@@ -1,0 +1,43 @@
+.media-grid,
+.poster-grid,
+.movie-grid,
+.library-grid,
+.content-grid,
+[class*="media-grid"],
+[class*="poster-grid"],
+[class*="movie-grid"],
+[class*="library-grid"] {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 190px)) !important;
+  align-items: start !important;
+  gap: 16px !important;
+}
+
+.poster-card,
+.media-card,
+.movie-card,
+.library-card,
+[class*="poster-card"],
+[class*="media-card"],
+[class*="movie-card"] {
+  width: 100% !important;
+  max-width: 190px !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+.poster-card img,
+.media-card img,
+.movie-card img,
+.library-card img,
+[class*="poster-card"] img,
+[class*="media-card"] img,
+[class*="movie-card"] img {
+  width: 100% !important;
+  aspect-ratio: 2 / 3 !important;
+  height: auto !important;
+  max-height: 285px !important;
+  object-fit: cover !important;
+  border-radius: 10px !important;
+}

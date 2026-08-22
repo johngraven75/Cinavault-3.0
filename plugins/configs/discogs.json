@@ -1,0 +1,15 @@
+{
+  "_plugin": "Discogs",
+  "_key": "discogs",
+  "_category": "Music",
+  "_description": "Discogs \u2014 vinyl and music release database. Free personal access token from https://www.discogs.com/settings/developers",
+  "_docs": "https://www.discogs.com/developers",
+  "enabled": true,
+  "token": "",
+  "base_url": "https://api.discogs.com",
+  "auto_match": true,
+  "release_metadata": true,
+  "artist_metadata": true,
+  "label_metadata": true,
+  "request_delay_ms": 1000
+}

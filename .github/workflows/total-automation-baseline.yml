@@ -1,0 +1,54 @@
+name: Total Automation Baseline
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Whitespace and patch integrity
+        run: git diff --check
+
+      - name: Reject unresolved merge markers
+        shell: bash
+        run: |
+          if git grep -n -E '^(<<<<<<< |>>>>>>> )' -- .; then
+            echo 'Unresolved merge-conflict markers detected.' >&2
+            exit 1
+          fi
+
+      - name: Detect repository stack
+        shell: bash
+        run: |
+          echo '### Repository stack detection' >> "$GITHUB_STEP_SUMMARY"
+          found=0
+          for marker in '*.sln' '*.csproj' 'package.json' 'Cargo.toml' 'go.mod' 'pyproject.toml' 'requirements.txt' 'gradlew' 'build.gradle' 'build.gradle.kts' 'Package.swift'; do
+            while IFS= read -r file; do
+              [[ -z "$file" ]] && continue
+              echo "- $file" >> "$GITHUB_STEP_SUMMARY"
+              found=1
+            done < <(find . -maxdepth 4 -type f -name "$marker" -print)
+          done
+          if [[ "$found" -eq 0 ]]; then
+            echo '- No standard build marker detected; governance checks still apply.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Verify clean checkout state
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git status --short
+            echo 'Validation modified tracked files or checkout was not clean.' >&2
+            exit 1
+          fi

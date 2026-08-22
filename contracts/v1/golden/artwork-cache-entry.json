@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "mediaKey": "media_01JTESTGOLDEN",
+  "kind": "poster",
+  "mimeType": "image/jpeg",
+  "byteLength": 128734,
+  "sha256": "8a93f5b8e4c796f698a3fb24c8b327eb5f1f51537cf4f8f09beea98631a9d31a",
+  "width": 1000,
+  "height": 1500,
+  "sourceProvider": "tvmaze",
+  "cacheState": "cached",
+  "deliveryPath": "/api/artwork/media_01JTESTGOLDEN/poster",
+  "localPathExposed": false,
+  "expiresAt": null
+}

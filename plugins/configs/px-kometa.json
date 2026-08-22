@@ -1,0 +1,13 @@
+{
+  "_plugin": "Kometa (MS-A)",
+  "_key": "px-kometa",
+  "_category": "Management",
+  "_platform": "plex",
+  "_description": "Automated collection management with smart filters and custom poster overlays.",
+  "enabled": true,
+  "config_path": "",
+  "run_interval_hours": 24,
+  "overlay_update": true,
+  "collection_update": true,
+  "playlist_update": true
+}

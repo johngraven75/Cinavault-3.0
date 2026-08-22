@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "policy": "all_providers_enabled",
+  "credentialsStorage": "native_secure_store",
+  "portableAcrossOperatingSystems": true,
+  "providers": [
+    {
+      "id": "tvmaze",
+      "name": "TVMaze",
+      "category": "Movies & TV",
+      "enabled": true,
+      "requiresKey": false,
+      "implemented": true,
+      "endpoint": "https://api.tvmaze.com",
+      "customEndpoint": null
+    },
+    {
+      "id": "tmdb",
+      "name": "TMDb",
+      "category": "Movies & TV",
+      "enabled": true,
+      "requiresKey": true,
+      "implemented": true,
+      "endpoint": "https://api.themoviedb.org/3",
+      "customEndpoint": null
+    }
+  ]
+}

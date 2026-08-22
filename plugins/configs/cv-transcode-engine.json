@@ -1,0 +1,17 @@
+{
+  "_plugin": "Hardware Transcode Engine",
+  "_key": "cv-transcode-engine",
+  "_category": "Playback",
+  "_platform": "cinavault",
+  "_description": "GPU-accelerated transcoding with NVENC, QSV, and VAAPI support.",
+  "enabled": true,
+  "hardware_acceleration": "auto",
+  "preferred_codec": "h264",
+  "max_bitrate_mbps": 20,
+  "crf": 23,
+  "preset": "fast",
+  "audio_codec": "aac",
+  "audio_bitrate_kbps": 192,
+  "subtitle_burn": false,
+  "hdr_tonemapping": true
+}

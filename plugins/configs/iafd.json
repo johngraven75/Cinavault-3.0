@@ -1,0 +1,19 @@
+{
+  "_plugin": "IAFD",
+  "_key": "iafd",
+  "_category": "Adult Metadata",
+  "_description": "IAFD (Internet Adult Film Database) — the original adult film database. Provides performer biographies, filmographies, and studio information via web scraping. No API key required.",
+  "_docs": "https://www.iafd.com",
+  "enabled": true,
+  "base_url": "https://www.iafd.com",
+  "scrape_mode": true,
+  "auto_match": true,
+  "poster_download": true,
+  "performer_bio": true,
+  "performer_filmography": true,
+  "studio_info": true,
+  "request_delay_ms": 500,
+  "max_retries": 3,
+  "timeout_seconds": 15,
+  "match_threshold": 0.6
+}

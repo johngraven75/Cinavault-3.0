@@ -1,0 +1,14 @@
+{
+  "_plugin": "MusicBrainz",
+  "_key": "musicbrainz",
+  "_category": "Music",
+  "_description": "MusicBrainz \u2014 open music encyclopedia with recordings, releases, and artist data. No API key required.",
+  "_docs": "https://musicbrainz.org/doc/MusicBrainz_API",
+  "enabled": true,
+  "base_url": "https://musicbrainz.org/ws/2",
+  "format": "json",
+  "auto_match": true,
+  "include_relations": true,
+  "request_delay_ms": 1000,
+  "user_agent": "CinaVault/1.0"
+}

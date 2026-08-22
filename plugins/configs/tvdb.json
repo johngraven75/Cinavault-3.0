@@ -1,0 +1,19 @@
+{
+  "_plugin": "TVDB",
+  "_key": "tvdb",
+  "_category": "TV Shows",
+  "_description": "TheTVDB \u2014 definitive TV show database. Episode titles, air dates, banners, cast. Free API key from https://thetvdb.com/api-information",
+  "_docs": "https://thetvdb.com/api-information",
+  "enabled": true,
+  "api_key": "",
+  "base_url": "https://api4.thetvdb.com/v4",
+  "language": "eng",
+  "auto_match": true,
+  "nfo_write": true,
+  "poster_download": true,
+  "banner_download": true,
+  "episode_metadata": true,
+  "season_metadata": true,
+  "cast_metadata": true,
+  "fallback_on_no_match": true
+}

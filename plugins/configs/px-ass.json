@@ -1,0 +1,12 @@
+{
+  "_plugin": "Absolute Series Scanner (MS-A)",
+  "_key": "px-ass",
+  "_category": "Metadata",
+  "_platform": "plex",
+  "_description": "Enhanced scanner for anime with absolute episode numbering.",
+  "enabled": true,
+  "absolute_numbering": true,
+  "anime_mode": true,
+  "use_anidb": true,
+  "use_tvdb": true
+}

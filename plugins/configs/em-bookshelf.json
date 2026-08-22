@@ -1,0 +1,13 @@
+{
+  "_plugin": "Bookshelf (MS-B)",
+  "_key": "em-bookshelf",
+  "_category": "Metadata",
+  "_platform": "emby",
+  "_description": "eBook and audiobook metadata provider for Emby/CinaVault.",
+  "enabled": true,
+  "scan_epub": true,
+  "scan_pdf": true,
+  "scan_audiobook": true,
+  "metadata_language": "en",
+  "cover_download": true
+}

@@ -1,0 +1,18 @@
+{
+  "_plugin": "Fanart.tv",
+  "_key": "fanart",
+  "_category": "Artwork",
+  "_description": "Fanart.tv \u2014 high-quality fan art, posters, backgrounds, logos, and disc art for movies, TV, and music. Free API key from https://fanart.tv/get-an-api-key/",
+  "_docs": "https://fanart.tv/api-docs/",
+  "enabled": true,
+  "api_key": "",
+  "base_url": "https://webservice.fanart.tv/v3",
+  "prefer_language": "en",
+  "poster_download": true,
+  "backdrop_download": true,
+  "logo_download": true,
+  "banner_download": true,
+  "disc_art_download": false,
+  "thumb_download": true,
+  "fallback_to_english": true
+}

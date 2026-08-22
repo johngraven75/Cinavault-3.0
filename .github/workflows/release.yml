@@ -1,0 +1,266 @@
+name: Build and Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag, for example build-169
+        required: true
+        default: build-169
+      prerelease:
+        description: Publish as a prerelease
+        required: true
+        type: boolean
+        default: false
+  issue_comment:
+    types:
+      - created
+  push:
+    branches:
+      - main
+    tags:
+      - "build-*"
+      - "v*"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: release-build-169
+  cancel-in-progress: false
+
+env:
+  RELEASE_MONITOR_ISSUE: "46"
+
+jobs:
+  announce:
+    name: Register release run
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/') ||
+      contains(github.event.head_commit.message, '[release build-169]') ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.number == 46 &&
+       github.event.comment.body == '/release build-169' &&
+       github.event.comment.author_association == 'OWNER')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post run link
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(process.env.RELEASE_MONITOR_ISSUE),
+              body: `Build 169 release run started: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nCommit: ${context.sha}`
+            });
+
+  validate:
+    name: Regression Gate
+    needs: announce
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript validation
+        run: npm run lint
+
+      - name: Carry-forward regression tests
+        run: npm run test:all
+
+      - name: Production frontend build
+        run: npm run build
+
+  windows-installers:
+    name: Windows MSI and NSIS
+    needs: validate
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+
+      - name: Cache Rust
+        uses: swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare required Windows resources
+        shell: pwsh
+        run: |
+          choco install wireguard -y --no-progress
+          $wireGuardCandidates = @(
+            'C:\Program Files\WireGuard\wireguard.exe',
+            'C:\Program Files (x86)\WireGuard\wireguard.exe'
+          )
+          $wireGuardSource = $wireGuardCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $wireGuardSource) {
+            $wireGuardSource = Get-ChildItem 'C:\Program Files*' -Filter wireguard.exe -Recurse -ErrorAction SilentlyContinue |
+              Select-Object -First 1 -ExpandProperty FullName
+          }
+          if (-not $wireGuardSource) { throw 'A genuine WireGuard executable could not be located after installation.' }
+          New-Item -ItemType Directory -Force -Path src-tauri/tools/wireguard | Out-Null
+          Copy-Item $wireGuardSource src-tauri/tools/wireguard/wireguard.exe -Force
+
+          Add-Type -AssemblyName System.Drawing
+          Get-ChildItem src-tauri/icons -Filter *.png | ForEach-Object {
+            $sourcePath = $_.FullName
+            $temporaryPath = "$sourcePath.rgba.png"
+            $sourceImage = [System.Drawing.Image]::FromFile($sourcePath)
+            try {
+              $bitmap = New-Object System.Drawing.Bitmap($sourceImage.Width, $sourceImage.Height, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+              try {
+                $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+                try {
+                  $graphics.DrawImage($sourceImage, 0, 0, $sourceImage.Width, $sourceImage.Height)
+                } finally {
+                  $graphics.Dispose()
+                }
+                $bitmap.Save($temporaryPath, [System.Drawing.Imaging.ImageFormat]::Png)
+              } finally {
+                $bitmap.Dispose()
+              }
+            } finally {
+              $sourceImage.Dispose()
+            }
+            Move-Item $temporaryPath $sourcePath -Force
+          }
+
+      - name: Native Rust validation
+        run: cargo check --manifest-path src-tauri/Cargo.toml
+
+      - name: Build Tauri installers
+        run: npm run tauri build
+
+      - name: Collect installer artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release-assets | Out-Null
+          Get-ChildItem -Path src-tauri/target/release/bundle -Recurse -File |
+            Where-Object { $_.Extension -in '.msi', '.exe' } |
+            Copy-Item -Destination release-assets
+          $installers = Get-ChildItem release-assets -File
+          if (-not $installers) {
+            throw 'No MSI or NSIS installer artifacts were produced.'
+          }
+          if (-not ($installers | Where-Object { $_.Extension -eq '.msi' })) {
+            throw 'The MSI installer was not produced.'
+          }
+          if (-not ($installers | Where-Object { $_.Extension -eq '.exe' })) {
+            throw 'The NSIS installer was not produced.'
+          }
+
+      - name: Upload installers
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cinavault-build-169-windows-installers-${{ github.sha }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Resolve release tag
+        id: release
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+          INPUT_PRERELEASE: ${{ inputs.prerelease }}
+          GITHUB_REF_VALUE: ${{ github.ref }}
+          GITHUB_REF_NAME_VALUE: ${{ github.ref_name }}
+        run: |
+          if ($env:EVENT_NAME -eq 'workflow_dispatch') {
+            $releaseTag = $env:INPUT_RELEASE_TAG
+            $prerelease = $env:INPUT_PRERELEASE
+          } elseif ($env:GITHUB_REF_VALUE.StartsWith('refs/tags/')) {
+            $releaseTag = $env:GITHUB_REF_NAME_VALUE
+            $prerelease = 'false'
+          } else {
+            $releaseTag = 'build-169'
+            $prerelease = 'false'
+          }
+
+          if ($releaseTag -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$') {
+            throw 'Release tags may contain only letters, numbers, periods, underscores, and hyphens.'
+          }
+          if ($prerelease -notin @('true', 'false')) {
+            throw 'Prerelease must be either true or false.'
+          }
+
+          "tag=$releaseTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "prerelease=$prerelease" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag }}
+          target_commitish: main
+          name: CinaVault Premium Build 169
+          prerelease: ${{ steps.release.outputs.prerelease }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: release-assets/*
+
+  report-success:
+    name: Report release success
+    needs: windows-installers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post verified release
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(process.env.RELEASE_MONITOR_ISSUE),
+              body: `Build 169 release workflow succeeded.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\nRelease: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/releases/tag/build-169`
+            });
+
+  report-failure:
+    name: Report release failure
+    needs:
+      - announce
+      - validate
+      - windows-installers
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post failed run
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(process.env.RELEASE_MONITOR_ISSUE),
+              body: `Build 169 release workflow failed.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\nCommit: ${context.sha}`
+            });

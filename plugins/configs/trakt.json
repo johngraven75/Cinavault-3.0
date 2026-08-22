@@ -1,0 +1,18 @@
+{
+  "_plugin": "Trakt",
+  "_key": "trakt",
+  "_category": "Movies & TV",
+  "_description": "Trakt \u2014 track what you watch, sync ratings and watchlists across apps. Free API key from https://trakt.tv/oauth/applications",
+  "_docs": "https://trakt.docs.apiary.io",
+  "enabled": true,
+  "client_id": "",
+  "client_secret": "",
+  "base_url": "https://api.trakt.tv",
+  "sync_watched": true,
+  "sync_ratings": true,
+  "sync_watchlist": true,
+  "sync_favorites": true,
+  "sync_interval_hours": 24,
+  "scrobble_on_play": true,
+  "scrobble_threshold_percent": 80
+}

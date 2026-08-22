@@ -1,0 +1,11 @@
+{
+  "_plugin": "Session Cleaner (MS-C)",
+  "_key": "jf-session-cleaner",
+  "_category": "Management",
+  "_platform": "jellyfin",
+  "_description": "Auto-remove stale sessions and device entries.",
+  "enabled": true,
+  "max_session_age_days": 30,
+  "auto_clean": true,
+  "clean_interval_hours": 24
+}

@@ -1,0 +1,11 @@
+{
+  "_plugin": "Bulky (MS-B)",
+  "_key": "em-bulky",
+  "_category": "Management",
+  "_platform": "emby",
+  "_description": "Mass metadata editor for batch editing tags, genres, and ratings.",
+  "enabled": true,
+  "batch_size": 50,
+  "auto_apply": false,
+  "confirm_before_apply": true
+}

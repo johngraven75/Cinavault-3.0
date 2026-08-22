@@ -1,0 +1,13 @@
+{
+  "_plugin": "GameBrowser (MS-B)",
+  "_key": "em-gamebrowser",
+  "_category": "Content Providers",
+  "_platform": "emby",
+  "_description": "Game support for Emby/CinaVault \u2014 browse and manage video game collections.",
+  "enabled": true,
+  "emulator_path": "",
+  "roms_path": "",
+  "auto_scan": true,
+  "scrape_metadata": true,
+  "download_artwork": true
+}

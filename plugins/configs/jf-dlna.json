@@ -1,0 +1,12 @@
+{
+  "_plugin": "DLNA (MS-C)",
+  "_key": "jf-dlna",
+  "_category": "Utilities",
+  "_platform": "jellyfin",
+  "_description": "DLNA server and renderer for streaming to compatible network devices.",
+  "enabled": true,
+  "server_name": "CinaVault",
+  "alive_message_interval_seconds": 1800,
+  "auto_start": true,
+  "bind_address": "0.0.0.0"
+}

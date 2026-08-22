@@ -1,0 +1,21 @@
+{
+  "_plugin": "StashDB",
+  "_key": "stashdb",
+  "_category": "Adult Metadata",
+  "_description": "StashDB — community-maintained adult scene database with GraphQL API. Provides scene titles, performers, studios, tags, and fingerprint-based matching. Requires a free API key from https://stashdb.org",
+  "_docs": "https://stashdb.org/docs",
+  "enabled": true,
+  "api_key": "",
+  "endpoint": "https://stashdb.org/graphql",
+  "auto_match": true,
+  "fingerprint_match": true,
+  "poster_download": true,
+  "nfo_write": true,
+  "performer_metadata": true,
+  "studio_metadata": true,
+  "tag_sync": true,
+  "rating_sync": true,
+  "scene_date": true,
+  "match_threshold": 0.75,
+  "fallback_on_no_match": true
+}

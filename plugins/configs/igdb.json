@@ -1,0 +1,16 @@
+{
+  "_plugin": "IGDB",
+  "_key": "igdb",
+  "_category": "Games",
+  "_description": "IGDB \u2014 Internet Game Database by Twitch. Game metadata, covers, screenshots. Free API via Twitch Developer Console.",
+  "_docs": "https://api-docs.igdb.com",
+  "enabled": true,
+  "client_id": "",
+  "client_secret": "",
+  "base_url": "https://api.igdb.com/v4",
+  "auto_match": true,
+  "cover_download": true,
+  "screenshot_download": true,
+  "genre_sync": true,
+  "rating_sync": true
+}

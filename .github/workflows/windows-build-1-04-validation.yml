@@ -1,0 +1,114 @@
+name: CinaVault Premium v2.13 Build 1.13 Windows Validation
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cinavault-premium-v2-14-build-1-14-windows-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  WIREGUARD_MSI_URL: https://download.wireguard.com/windows-client/wireguard-amd64-1.1.msi
+
+jobs:
+  validate-windows:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          components: rustfmt
+
+      - name: Initialize diagnostics
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path validation-logs -Force | Out-Null
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify v2.14 Build 1.14 identity
+        shell: pwsh
+        run: |
+          $build = Get-Content build-version.json -Raw | ConvertFrom-Json
+          if ($build.displayName -ne 'v2.14 Build 1.14') { throw "Unexpected displayName: $($build.displayName)" }
+          if ($build.semanticVersion -ne '2.0.14') { throw "Unexpected semanticVersion: $($build.semanticVersion)" }
+          if ($build.releaseTag -ne 'v2-build-1.14') { throw "Unexpected releaseTag: $($build.releaseTag)" }
+          $build | ConvertTo-Json -Depth 10 | Set-Content validation-logs/build-identity.json
+
+      - name: Shared contracts and preventive gates
+        shell: pwsh
+        run: |
+          npm run verify:contracts 2>&1 | Tee-Object validation-logs/contracts.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run scan:preventive 2>&1 | Tee-Object validation-logs/preventive.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Frontend tests and build
+        shell: pwsh
+        run: |
+          npm run lint 2>&1 | Tee-Object validation-logs/typescript.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm test 2>&1 | Tee-Object validation-logs/frontend-tests.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run build 2>&1 | Tee-Object validation-logs/frontend-build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Prepare genuine Windows bundle resources
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-WebRequest -Uri $env:WIREGUARD_MSI_URL -OutFile wireguard-amd64.msi
+          $msiSignature = Get-AuthenticodeSignature .\wireguard-amd64.msi
+          if ($msiSignature.Status -ne 'Valid') { throw "WireGuard MSI signature is not valid: $($msiSignature.Status)" }
+          New-Item -ItemType Directory -Path wireguard-extracted -Force | Out-Null
+          $target = (Resolve-Path .\wireguard-extracted).Path
+          $process = Start-Process msiexec.exe -ArgumentList @('/a', (Resolve-Path .\wireguard-amd64.msi).Path, '/qn', "TARGETDIR=$target") -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "WireGuard extraction failed: $($process.ExitCode)" }
+          $wireGuard = Get-ChildItem wireguard-extracted -Recurse -File -Filter wireguard.exe | Select-Object -First 1
+          if (-not $wireGuard) { throw 'wireguard.exe was not found.' }
+          New-Item -ItemType Directory -Path src-tauri\tools\wireguard -Force | Out-Null
+          Copy-Item $wireGuard.FullName src-tauri\tools\wireguard\wireguard.exe -Force
+          New-Item -ItemType Directory -Path src-tauri\tools\cloudflared -Force | Out-Null
+          Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe' -OutFile src-tauri\tools\cloudflared\cloudflared.exe
+          if ((Get-Item src-tauri\tools\cloudflared\cloudflared.exe).Length -lt 10000000) { throw 'cloudflared binary is unexpectedly small.' }
+
+      - name: Live TVMaze and Cinemeta metadata poster acceptance
+        shell: pwsh
+        run: |
+          cmd /d /s /c "npm run test:metadata-live > validation-logs\live-metadata.log 2>&1"
+          $exitCode = $LASTEXITCODE
+          $log = Get-Content validation-logs/live-metadata.log -Raw
+          Write-Host $log
+          if ($exitCode -ne 0) { throw "Live metadata acceptance failed: $exitCode" }
+          if ($log -notmatch 'live_metadata_poster_acceptance_tvmaze_series') { throw 'TVMaze series acceptance test did not execute.' }
+          if ($log -notmatch 'live_metadata_poster_acceptance_cinemeta_movie') { throw 'Cinemeta movie acceptance test did not execute.' }
+          if ($log -notmatch 'test result: ok\. 2 passed; 0 failed') { throw 'Live metadata gate did not report exactly two passing acceptance tests.' }
+
+      - name: Rust validation
+        shell: pwsh
+        run: |
+          cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check 2>&1 | Tee-Object validation-logs/rust-format.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo test --manifest-path src-tauri/Cargo.toml --locked --all-targets 2>&1 | Tee-Object validation-logs/rust-tests.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo check --manifest-path src-tauri/Cargo.toml --locked 2>&1 | Tee-Object validation-logs/rust-check.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload Windows validation diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: CinaVault-Premium-v2.14-Build-1.14-Windows-Diagnostics
+          path: validation-logs/
+          if-no-files-found: warn
+          retention-days: 90

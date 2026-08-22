@@ -1,0 +1,13 @@
+{
+  "_plugin": "Simkl (MS-C)",
+  "_key": "jf-simkl",
+  "_category": "Sync",
+  "_platform": "jellyfin",
+  "_description": "Simkl scrobbler plugin for Jellyfin/CinaVault.",
+  "enabled": true,
+  "client_id": "",
+  "client_secret": "",
+  "auto_scrobble": true,
+  "sync_watched": true,
+  "sync_ratings": true
+}

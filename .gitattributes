@@ -1,0 +1,6 @@
+releases/build-115/*.exe filter=lfs diff=lfs merge=lfs -text
+releases/build-115/*.msi filter=lfs diff=lfs merge=lfs -text
+releases/build-116/*.exe filter=lfs diff=lfs merge=lfs -text
+releases/build-116/*.msi filter=lfs diff=lfs merge=lfs -text
+releases/rc2-build1/*.exe filter=lfs diff=lfs merge=lfs -text
+releases/rc2-build1/*.msi filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,15 @@
+{
+  "_plugin": "Last.fm",
+  "_key": "lastfm",
+  "_category": "Music",
+  "_description": "Last.fm \u2014 music discovery and scrobbling. Free API key from https://www.last.fm/api/account/create",
+  "_docs": "https://www.last.fm/api",
+  "enabled": true,
+  "api_key": "",
+  "base_url": "https://ws.audioscrobbler.com/2.0",
+  "auto_scrobble": true,
+  "scrobble_threshold_percent": 50,
+  "artist_bio": true,
+  "album_art": true,
+  "similar_artists": true
+}

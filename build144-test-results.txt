@@ -1,0 +1,50 @@
+[32m✔ Build 140 Google Cast service and clearly marked Cast UI are installed [90m(2.8193ms)[39m[39m
+[32m✔ Build 140 app shell keeps startup, persistence, plugin, and wheel-scroll behavior [90m(5.1152ms)[39m[39m
+[32m✔ Build 140 sidebar keeps every core destination and collapse control [90m(2.5793ms)[39m[39m
+[32m✔ Build 140 header keeps HUD identity, search, clock, fullscreen, and notifications [90m(0.5983ms)[39m[39m
+[32m✔ Kodi-inspired CinaVault skins are selectable in Settings [90m(0.8119ms)[39m[39m
+[32m✔ PGMA and Porn Site Nuxt remain exposed as metadata providers [90m(0.9516ms)[39m[39m
+[32m✔ Build 140 routes user-facing metadata commands through metadata_ext at runtime [90m(1.7926ms)[39m[39m
+[32m✔ Build 140 metadata extension handlers are real Tauri commands [90m(1.0256ms)[39m[39m
+[32m✔ Build 140 restored providers remain normalized and listed by extension source [90m(0.5341ms)[39m[39m
+[32m✔ Build 141 poster cards use standard multi-item row sizing [90m(7.5662ms)[39m[39m
+[32m✔ Build 142 poster cards use standard multi-item row sizing [90m(7.29ms)[39m[39m
+[32m✔ Build 143 AI Media Agent is permanently enabled and safe [90m(1.8528ms)[39m[39m
+[32m✔ Build 143 media cards are hard-clamped to standard poster size [90m(1.7238ms)[39m[39m
+[32m✔ Build 144 adds proprietary CinaVault Server without removing Jellyfin compatibility [90m(1.9732ms)[39m[39m
+[32m✔ active repository files do not contain stale build-number drift [90m(185.7649ms)[39m[39m
+[32m✔ TITLE_LETTERS exposes the full A-Z selector list [90m(1.4533ms)[39m[39m
+[32m✔ getTitleInitial returns the first A-Z character from the trimmed title [90m(0.377ms)[39m[39m
+[32m✔ filterItemsByTitleInitial keeps only titles that start with the selected letter [90m(6.134ms)[39m[39m
+[32m✔ filterItemsByTitleInitial supports all and numeric symbol buckets [90m(0.3898ms)[39m[39m
+[32m✔ buildLibraryPageRequest bounds the initial all-media library load [90m(2.2217ms)[39m[39m
+[32m✔ buildLibraryPageRequest sends the selected media type without loading every row [90m(0.275ms)[39m[39m
+[32m✔ mergeLibraryPage appends unique media rows across pages [90m(0.35ms)[39m[39m
+[32m✔ hasMoreLibraryPages only continues when a full page was returned [90m(0.3153ms)[39m[39m
+[32m✔ shouldAutoLoadNextLibraryPage keeps full-library loading moving after a full page [90m(0.2928ms)[39m[39m
+[32m✔ canPlayMediaItem accepts real video files [90m(1.5242ms)[39m[39m
+[32m✔ canPlayMediaItem rejects generated chapter images and empty paths [90m(0.5679ms)[39m[39m
+[32m✔ isLibraryDisplayableMediaItem hides generated chapter images from the library [90m(0.2101ms)[39m[39m
+[32m✔ isLibraryDisplayableMediaItem hides sidecar artwork photo rows from the library [90m(2.4745ms)[39m[39m
+[32m✔ formatMetadataTaskProgress clamps percentages and keeps task copy useful [90m(2.5846ms)[39m[39m
+[32m✔ metadataTaskPopupVisible keeps the completion state visible long enough to inform the user [90m(0.2747ms)[39m[39m
+[32m✔ getWheelDeltaPixels preserves pixel deltas for trackpads [90m(1.3742ms)[39m[39m
+[32m✔ getWheelDeltaPixels converts line and page wheel units [90m(0.2348ms)[39m[39m
+[32m✔ getWheelScrolledTop clamps page scrolling to the available range [90m(0.2546ms)[39m[39m
+[32m✔ sanitizeMetadataProviders keeps defaults and repairs malformed persisted providers [90m(1.8252ms)[39m[39m
+[32m✔ getMetadataProviderInitials never throws on missing provider names [90m(0.2424ms)[39m[39m
+[32m✔ matchesPluginSearch tolerates missing description and tags [90m(0.2713ms)[39m[39m
+[32m✔ applyPluginRuntimeState does not mark the whole catalog installed [90m(0.3999ms)[39m[39m
+[32m✔ applyPluginRuntimeState reflects disabled installed plugins [90m(0.194ms)[39m[39m
+[32m✔ getUnreadStatusMessages returns newest unread messages after the last read index [90m(0.2235ms)[39m[39m
+[32m✔ buildAddXtreamProfileArgs sends serverUrl for the Tauri command [90m(1.7181ms)[39m[39m
+[32m✔ normalizeXtreamServerUrl strips common Xtream endpoint paths to the server base [90m(0.6204ms)[39m[39m
+[32m✔ buildAddXtreamProfileArgs rejects unusable server URLs with a helpful message [90m(0.5737ms)[39m[39m
+[34mℹ tests 42[39m
+[34mℹ suites 0[39m
+[34mℹ pass 42[39m
+[34mℹ fail 0[39m
+[34mℹ cancelled 0[39m
+[34mℹ skipped 0[39m
+[34mℹ todo 0[39m
+[34mℹ duration_ms 420.7123[39m

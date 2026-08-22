@@ -1,0 +1,14 @@
+{
+  "_plugin": "AudioDB",
+  "_key": "audiodb",
+  "_category": "Music",
+  "_description": "TheAudioDB \u2014 music metadata including artist bios, album art, and track info. Free public API key is '2'.",
+  "_docs": "https://www.theaudiodb.com/api_guide.php",
+  "enabled": true,
+  "api_key": "2",
+  "base_url": "https://theaudiodb.com/api/v1/json",
+  "auto_match": true,
+  "artist_bio": true,
+  "album_art": true,
+  "track_metadata": true
+}

@@ -1,0 +1,14 @@
+{
+  "_plugin": "Cloud Sync Engine",
+  "_key": "cv-cloud-sync",
+  "_category": "Sync",
+  "_platform": "cinavault",
+  "_description": "Bidirectional sync with OneDrive, Google Drive, and Dropbox.",
+  "enabled": true,
+  "providers": [],
+  "sync_interval_minutes": 60,
+  "sync_watched": true,
+  "sync_ratings": true,
+  "sync_metadata": false,
+  "conflict_resolution": "newest_wins"
+}

@@ -1,0 +1,14 @@
+{
+  "_plugin": "Chapter Image Detector",
+  "_key": "cv-chapter-detect",
+  "_category": "Playback",
+  "_platform": "cinavault",
+  "_description": "Automated chapter image extraction and scene boundary detection.",
+  "enabled": true,
+  "auto_extract": true,
+  "interval_seconds": 600,
+  "max_chapters": 30,
+  "output_format": "jpg",
+  "quality": 85,
+  "skip_existing": true
+}

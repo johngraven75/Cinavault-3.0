@@ -1,0 +1,85 @@
+/* Build 155 final media-row/poster sizing fix */
+.media-row,
+.media-grid,
+.library-row,
+.library-grid,
+.movie-row,
+.movie-grid,
+.poster-row,
+.poster-grid,
+[class*="media-row"],
+[class*="media-grid"],
+[class*="library-row"],
+[class*="library-grid"],
+[class*="movie-row"],
+[class*="movie-grid"],
+[class*="MediaRow"],
+[class*="MediaGrid"],
+[class*="LibraryRow"],
+[class*="LibraryGrid"] {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 168px)) !important;
+  gap: 14px !important;
+  align-items: start !important;
+  justify-content: start !important;
+}
+
+.media-card,
+.movie-card,
+.library-card,
+.poster-card,
+[class*="media-card"],
+[class*="movie-card"],
+[class*="library-card"],
+[class*="poster-card"],
+[class*="MediaCard"],
+[class*="MovieCard"],
+[class*="LibraryCard"],
+[class*="PosterCard"] {
+  width: 168px !important;
+  min-width: 132px !important;
+  max-width: 168px !important;
+  height: auto !important;
+  max-height: 340px !important;
+  flex: 0 0 168px !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+  overflow: hidden !important;
+}
+
+.media-card img,
+.movie-card img,
+.library-card img,
+.poster-card img,
+[class*="media-card"] img,
+[class*="movie-card"] img,
+[class*="library-card"] img,
+[class*="poster-card"] img,
+[class*="MediaCard"] img,
+[class*="MovieCard"] img,
+[class*="LibraryCard"] img,
+[class*="PosterCard"] img {
+  width: 100% !important;
+  height: 252px !important;
+  max-height: 252px !important;
+  aspect-ratio: 2 / 3 !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+@media (min-width: 1200px) {
+  .media-row,
+  .media-grid,
+  .library-row,
+  .library-grid,
+  .movie-row,
+  .movie-grid,
+  .poster-row,
+  .poster-grid,
+  [class*="MediaRow"],
+  [class*="MediaGrid"],
+  [class*="LibraryRow"],
+  [class*="LibraryGrid"] {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 170px)) !important;
+  }
+}

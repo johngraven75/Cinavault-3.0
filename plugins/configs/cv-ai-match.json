@@ -1,0 +1,14 @@
+{
+  "_plugin": "AI Media Matcher",
+  "_key": "cv-ai-match",
+  "_category": "AI",
+  "_platform": "cinavault",
+  "_description": "AI-powered media identification using file analysis and audio fingerprinting.",
+  "enabled": true,
+  "model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "confidence_threshold": 0.75,
+  "use_audio_fingerprint": true,
+  "use_visual_recognition": false,
+  "fallback_to_filename": true,
+  "batch_size": 10
+}

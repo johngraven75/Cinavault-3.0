@@ -1,0 +1,17 @@
+{
+  "_plugin": "OpenSubtitles (MS-C)",
+  "_key": "jf-open-subtitles",
+  "_category": "Subtitles",
+  "_platform": "jellyfin",
+  "_description": "OpenSubtitles plugin for Jellyfin/CinaVault. Auto-downloads subtitles for new media.",
+  "enabled": true,
+  "username": "",
+  "password": "",
+  "auto_download": true,
+  "languages": [
+    "en"
+  ],
+  "hearing_impaired": false,
+  "foreign_parts_only": false,
+  "upload_enabled": false
+}

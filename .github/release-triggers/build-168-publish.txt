@@ -1,0 +1,4 @@
+CinaVault Premium Build 168
+Version: 1.6.8
+Tag: v1.6.8
+Purpose: trigger Windows installer packaging and release publication

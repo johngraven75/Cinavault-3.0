@@ -1,0 +1,111 @@
+name: Backfill Release Test Notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_prereleases:
+        description: Include prereleases
+        required: false
+        default: "true"
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/backfill-release-test-notes.yml
+  workflow_run:
+    workflows:
+      - CinaVault Premium v2 Build 1.08 Release
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: cinavault-release-test-notes-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Backfill published releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          INCLUDE_PRERELEASES: ${{ inputs.include_prereleases || 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-test-notes
+
+          gh api --paginate "repos/${REPOSITORY}/releases?per_page=100" > releases.json
+          jq -c '.[] | select(.draft == false)' releases.json | while IFS= read -r release; do
+            tag="$(jq -r '.tag_name' <<<"$release")"
+            name="$(jq -r '.name // .tag_name' <<<"$release")"
+            published="$(jq -r '.published_at // "unknown"' <<<"$release")"
+            target="$(jq -r '.target_commitish // "unknown"' <<<"$release")"
+            prerelease="$(jq -r '.prerelease' <<<"$release")"
+
+            if [[ "$INCLUDE_PRERELEASES" != "true" && "$prerelease" == "true" ]]; then
+              continue
+            fi
+
+            safe_tag="$(printf '%s' "$tag" | tr '/:' '__')"
+            note="release-test-notes/${safe_tag}-TEST-NOTES.md"
+            archive="release-test-notes/${safe_tag}-test-notes.zip"
+
+            assets="$(jq -r '[.assets[].name] | join(", ")' <<<"$release")"
+            asset_count="$(jq -r '.assets | length' <<<"$release")"
+            commit_sha="$(gh api "repos/${REPOSITORY}/commits/${tag}" --jq '.sha' 2>/dev/null || true)"
+            if [[ -z "$commit_sha" ]]; then
+              commit_sha="$(gh api "repos/${REPOSITORY}/commits/${target}" --jq '.sha' 2>/dev/null || echo unknown)"
+            fi
+
+            existing_notes="$(jq -r '[.assets[].name | select(test("(?i)test[-_ ]?notes|evidence"))] | join(", ")' <<<"$release")"
+            evidence_status="Reconstructed from retained GitHub release metadata and available assets. Historical raw CI logs may no longer be retained."
+            if [[ -n "$existing_notes" ]]; then
+              evidence_status="Existing evidence assets found: ${existing_notes}. This backfill summary supplements them."
+            fi
+
+            cat > "$note" <<EOF
+          # CinaVault Premium Historical Release Test Notes
+
+          - Release: ${name}
+          - Tag: ${tag}
+          - Published: ${published}
+          - Target: ${target}
+          - Resolved commit: ${commit_sha}
+          - Prerelease: ${prerelease}
+          - Existing release asset count: ${asset_count}
+          - Existing assets: ${assets:-none}
+
+          ## Evidence classification
+
+          ${evidence_status}
+
+          ## Important limitation
+
+          This file does not claim that missing historical tests passed. It records only evidence still available from GitHub release metadata, retained assets, tags, and commits. Future builds use the mandatory full test-notes workflow and attach complete logs automatically.
+
+          ## Backfill generated
+
+          - Workflow run: ${GITHUB_RUN_ID}
+          - Generated UTC: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+            rm -f "$archive"
+            zip -j -q "$archive" "$note"
+            gh release upload "$tag" "$note" "$archive" --clobber --repo "$REPOSITORY"
+          done
+
+      - name: Upload backfill summary
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: historical-release-test-notes-backfill
+          path: release-test-notes/
+          if-no-files-found: warn
+          retention-days: 90

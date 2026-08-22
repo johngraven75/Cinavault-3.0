@@ -1,0 +1,20 @@
+{
+  "_plugin": "LDAP Auth (MS-C)",
+  "_key": "jf-ldap",
+  "_category": "Security",
+  "_platform": "jellyfin",
+  "_description": "LDAP/Active Directory authentication for enterprise environments.",
+  "enabled": true,
+  "server": "",
+  "port": 389,
+  "base_dn": "",
+  "bind_dn": "",
+  "bind_password": "",
+  "user_filter": "(objectClass=person)",
+  "use_ssl": false,
+  "ssl_port": 636,
+  "search_attributes": [
+    "uid",
+    "sAMAccountName"
+  ]
+}

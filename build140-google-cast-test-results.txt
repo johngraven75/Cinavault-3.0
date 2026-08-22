@@ -1,0 +1,84 @@
+CinaVault Premium Build 140 Google Cast Test Results
+Date: Thu Jul  2 08:06:43 EDT 2026
+
+✔ Build 140 Google Cast service and clearly marked Cast UI are installed (4.4157ms)
+✔ Build 140 app shell keeps startup, persistence, plugin, and wheel-scroll behavior (6.3954ms)
+✔ Build 140 sidebar keeps every core destination and collapse control (9.6912ms)
+✔ Build 140 header keeps HUD identity, search, clock, fullscreen, and notifications (3.7913ms)
+✔ Kodi-inspired CinaVault skins are selectable in Settings (12.1224ms)
+✔ PGMA and Porn Site Nuxt remain exposed as metadata providers (6.7727ms)
+✔ Build 140 routes user-facing metadata commands through metadata_ext at runtime (3.0918ms)
+✔ Build 140 metadata extension handlers are real Tauri commands (1.2088ms)
+✔ Build 140 restored providers remain normalized and listed by extension source (1.6248ms)
+✔ active repository files do not contain stale build-number drift (345.88ms)
+✔ TITLE_LETTERS exposes the full A-Z selector list (2.547ms)
+✔ getTitleInitial returns the first A-Z character from the trimmed title (0.5183ms)
+✔ filterItemsByTitleInitial keeps only titles that start with the selected letter (2.4018ms)
+✔ filterItemsByTitleInitial supports all and numeric symbol buckets (0.3209ms)
+✔ buildLibraryPageRequest bounds the initial all-media library load (3.1034ms)
+✔ buildLibraryPageRequest sends the selected media type without loading every row (0.3987ms)
+✔ mergeLibraryPage appends unique media rows across pages (0.7601ms)
+✔ hasMoreLibraryPages only continues when a full page was returned (0.4339ms)
+✔ shouldAutoLoadNextLibraryPage keeps full-library loading moving after a full page (0.3892ms)
+✔ canPlayMediaItem accepts real video files (3.2439ms)
+✔ canPlayMediaItem rejects generated chapter images and empty paths (0.3491ms)
+✔ isLibraryDisplayableMediaItem hides generated chapter images from the library (0.2689ms)
+✔ isLibraryDisplayableMediaItem hides sidecar artwork photo rows from the library (0.8027ms)
+✔ formatMetadataTaskProgress clamps percentages and keeps task copy useful (1.2903ms)
+✔ metadataTaskPopupVisible keeps the completion state visible long enough to inform the user (0.4383ms)
+✔ getWheelDeltaPixels preserves pixel deltas for trackpads (1.3785ms)
+✔ getWheelDeltaPixels converts line and page wheel units (0.6675ms)
+✔ getWheelScrolledTop clamps page scrolling to the available range (0.2771ms)
+✔ sanitizeMetadataProviders keeps defaults and repairs malformed persisted providers (3.079ms)
+✔ getMetadataProviderInitials never throws on missing provider names (0.3478ms)
+✔ matchesPluginSearch tolerates missing description and tags (0.3444ms)
+✖ applyPluginRuntimeState does not mark the whole catalog installed (4.2169ms)
+✔ applyPluginRuntimeState reflects disabled installed plugins (0.2711ms)
+✔ getUnreadStatusMessages returns newest unread messages after the last read index (0.2894ms)
+✔ buildAddXtreamProfileArgs sends serverUrl for the Tauri command (3.9027ms)
+✔ normalizeXtreamServerUrl strips common Xtream endpoint paths to the server base (0.5914ms)
+✔ buildAddXtreamProfileArgs rejects unusable server URLs with a helpful message (0.9558ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 36
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 607.8523
+
+✖ failing tests:
+
+test at tests\pluginUiSafety.test.mjs:48:1
+✖ applyPluginRuntimeState does not mark the whole catalog installed (4.2169ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    [
+      {
+        id: 'cv-core',
+        status: 'active'
+      },
+  ...
+      },
+  +   {
+  +     id: 'px-pgma-modernized',
+  +     status: 'active'
+  +   }
+    ]
+  
+      at TestContext.<anonymous> (file:///C:/Users/johng/CinaVault-Premium/tests/pluginUiSafety.test.mjs:55:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { id: 'cv-core', status: 'active' }, { id: 'jf-trakt', status: 'active' }, { id: 'px-bazarr', status: 'available' }, { id: 'px-pgma-modernized', status: 'active' } ],
+    expected: [ { id: 'cv-core', status: 'active' }, { id: 'jf-trakt', status: 'active' }, { id: 'px-bazarr', status: 'available' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,54 @@
+name: Dependency Lock Integrity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - package.json
+      - package-lock.json
+      - .github/workflows/dependency-lock-integrity.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dependency-lock-integrity-main
+  cancel-in-progress: true
+
+jobs:
+  normalize-lockfile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Regenerate the lockfile from the package manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Regeneration also recovers a malformed lockfile without weakening npm ci.
+          rm -f package-lock.json
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          node -e "JSON.parse(require('node:fs').readFileSync('package-lock.json', 'utf8'))"
+          npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Commit a normalized lockfile when needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- package-lock.json; then
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add package-lock.json
+          git commit -m "chore: normalize npm dependency lockfile"
+          git push origin HEAD:main

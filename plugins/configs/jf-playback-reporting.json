@@ -1,0 +1,12 @@
+{
+  "_plugin": "Playback Reporting (MS-C)",
+  "_key": "jf-playback-reporting",
+  "_category": "Stats",
+  "_platform": "jellyfin",
+  "_description": "Collect and display playback statistics with graphs and activity logs.",
+  "enabled": true,
+  "retain_days": 365,
+  "keep_watching_items": true,
+  "track_users": true,
+  "track_items": true
+}

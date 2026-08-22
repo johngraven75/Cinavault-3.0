@@ -1,0 +1,116 @@
+:root {
+  --cv-media-card-width: 160px;
+  --cv-media-poster-height: 240px;
+  --cv-media-grid-gap: 14px;
+}
+
+.media-row,
+.media-grid,
+.library-row,
+.library-grid,
+.movie-row,
+.movie-grid,
+.poster-row,
+.poster-grid,
+[class*="MediaRow"],
+[class*="MediaGrid"],
+[class*="LibraryRow"],
+[class*="LibraryGrid"],
+[class*="mediaRow"],
+[class*="mediaGrid"],
+[class*="libraryRow"],
+[class*="libraryGrid"] {
+  display: grid !important;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(var(--cv-media-card-width), var(--cv-media-card-width))
+  ) !important;
+  gap: var(--cv-media-grid-gap) !important;
+  align-items: start !important;
+  justify-content: start !important;
+  grid-auto-flow: row dense !important;
+}
+
+.media-row > *,
+.media-grid > *,
+.library-row > *,
+.library-grid > *,
+.movie-row > *,
+.movie-grid > *,
+.poster-row > *,
+.poster-grid > *,
+[class*="MediaRow"] > *,
+[class*="MediaGrid"] > *,
+[class*="LibraryRow"] > *,
+[class*="LibraryGrid"] > *,
+[class*="mediaRow"] > *,
+[class*="mediaGrid"] > *,
+[class*="libraryRow"] > *,
+[class*="libraryGrid"] > *,
+.media-card,
+.poster-card,
+.movie-card,
+.library-card,
+[class*="MediaCard"],
+[class*="PosterCard"],
+[class*="MovieCard"],
+[class*="LibraryCard"],
+[class*="mediaCard"],
+[class*="posterCard"],
+[class*="movieCard"],
+[class*="libraryCard"] {
+  width: var(--cv-media-card-width) !important;
+  min-width: var(--cv-media-card-width) !important;
+  max-width: var(--cv-media-card-width) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: 330px !important;
+  flex: 0 0 var(--cv-media-card-width) !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.media-row img,
+.media-grid img,
+.library-row img,
+.library-grid img,
+.movie-row img,
+.movie-grid img,
+.poster-row img,
+.poster-grid img,
+[class*="MediaRow"] img,
+[class*="MediaGrid"] img,
+[class*="LibraryRow"] img,
+[class*="LibraryGrid"] img,
+[class*="mediaRow"] img,
+[class*="mediaGrid"] img,
+[class*="libraryRow"] img,
+[class*="libraryGrid"] img,
+.media-card img,
+.poster-card img,
+.movie-card img,
+.library-card img,
+[class*="MediaCard"] img,
+[class*="PosterCard"] img,
+[class*="MovieCard"] img,
+[class*="LibraryCard"] img {
+  width: var(--cv-media-card-width) !important;
+  min-width: var(--cv-media-card-width) !important;
+  max-width: var(--cv-media-card-width) !important;
+  height: var(--cv-media-poster-height) !important;
+  min-height: var(--cv-media-poster-height) !important;
+  max-height: var(--cv-media-poster-height) !important;
+  aspect-ratio: 2 / 3 !important;
+  object-fit: cover !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --cv-media-card-width: 132px;
+    --cv-media-poster-height: 198px;
+  }
+}

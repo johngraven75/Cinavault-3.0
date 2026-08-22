@@ -1,0 +1,17 @@
+{
+  "_plugin": "AniDB",
+  "_key": "anidb",
+  "_category": "Anime",
+  "_description": "AniDB \u2014 comprehensive anime database with detailed episode info, staff, and ratings. Free registration at https://anidb.net",
+  "_docs": "https://wiki.anidb.net/HTTP_API_Definition",
+  "enabled": true,
+  "client": "cinavault",
+  "clientver": 1,
+  "base_url": "https://api.anidb.net:9001/httpapi",
+  "auto_match": true,
+  "nfo_write": true,
+  "episode_metadata": true,
+  "staff_metadata": true,
+  "rating_sync": true,
+  "request_delay_ms": 2000
+}

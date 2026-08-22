@@ -1,0 +1,17 @@
+{
+  "contractVersion": 1,
+  "canonicalRepository": "johngraven75/CinaVault-Premium",
+  "fixtures": {
+    "metadata-provider-registry.json": {
+      "sha256": "b7ca1f8748296ce7651d17dec3165ac8a37e3aca321eaf558199299b44b5820d"
+    },
+    "artwork-cache-entry.json": {
+      "sha256": "d9b08d61cd3451278315102da031d0834db315639d49d7c16efb533ddd26e697"
+    }
+  },
+  "requiredPlatforms": [
+    "rust",
+    "kotlin",
+    "swift"
+  ]
+}

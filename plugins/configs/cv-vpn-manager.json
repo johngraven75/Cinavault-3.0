@@ -1,0 +1,14 @@
+{
+  "_plugin": "VPN Manager",
+  "_key": "cv-vpn-manager",
+  "_category": "Security",
+  "_platform": "cinavault",
+  "_description": "Built-in VPN integration with automatic connection management and kill switch.",
+  "enabled": true,
+  "provider": "",
+  "config_path": "",
+  "auto_connect": false,
+  "kill_switch": true,
+  "reconnect_on_drop": true,
+  "bind_interface": ""
+}

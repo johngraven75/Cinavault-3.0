@@ -1,0 +1,22 @@
+{
+  "_plugin": "ThePornDB",
+  "_key": "tpdb",
+  "_category": "Adult Metadata",
+  "_description": "ThePornDB — the largest adult scene/performer database. Provides scene titles, performers, studios, tags, posters, and NFO data. Requires a free API key from https://theporndb.net",
+  "_docs": "https://theporndb.net/docs",
+  "enabled": true,
+  "api_key": "",
+  "base_url": "https://api.theporndb.net",
+  "search_limit": 10,
+  "include_adult": true,
+  "auto_match": true,
+  "poster_download": true,
+  "nfo_write": true,
+  "performer_metadata": true,
+  "studio_metadata": true,
+  "tag_sync": true,
+  "rating_sync": true,
+  "scene_date": true,
+  "fallback_on_no_match": true,
+  "match_threshold": 0.7
+}

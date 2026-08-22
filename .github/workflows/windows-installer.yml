@@ -1,0 +1,192 @@
+name: Auto Build, Test, Cleanup & Release — v2 Build 1.06
+
+on:
+  # Immutable historical release: manual recovery only. Current CI/release workflows
+  # own push and pull-request validation to avoid duplicate builds and stale releases.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: v2-build-1-06-release-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_VERSION: 2.0.6
+  TAG_NAME: v2.0.6
+  ARTIFACT_NAME: CinaVault-Premium-Windows-v2-Build-1.06
+  WIREGUARD_MSI_URL: https://download.wireguard.com/windows-client/wireguard-amd64-1.1.msi
+
+jobs:
+  build-test-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Protect immutable v2 Build 1.06 release identity
+        if: github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git ls-remote --exit-code --tags origin "refs/tags/$env:TAG_NAME" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            throw "Release tag $env:TAG_NAME already exists. Advance the build number instead of replacing a published tag."
+          }
+          exit 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          targets: x86_64-pc-windows-msvc
+          components: rustfmt
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          workspaces: src-tauri -> target
+          cache-on-failure: true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify v2 Build 1.06 identity
+        shell: pwsh
+        run: |
+          $packageVersion = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $tauri = Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json
+          $tauriVersion = $tauri.version
+          $cargoVersion = ((Get-Content src-tauri/Cargo.toml | Select-String '^version = ' | Select-Object -First 1).Line -replace 'version = ', '').Trim('"')
+          if ($packageVersion -ne $env:APP_VERSION) { throw "package.json version is $packageVersion, expected $env:APP_VERSION" }
+          if ($tauriVersion -ne $env:APP_VERSION) { throw "tauri.conf.json version is $tauriVersion, expected $env:APP_VERSION" }
+          if ($cargoVersion -ne $env:APP_VERSION) { throw "Cargo.toml version is $cargoVersion, expected $env:APP_VERSION" }
+          if ($tauri.app.windows[0].title -notmatch 'v2 Build 1\.06') { throw 'Windows title is not v2 Build 1.06.' }
+
+      - name: Download and verify official WireGuard engine
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-WebRequest -Uri $env:WIREGUARD_MSI_URL -OutFile wireguard-amd64.msi
+          $msiSignature = Get-AuthenticodeSignature .\wireguard-amd64.msi
+          if ($msiSignature.Status -ne 'Valid') { throw "WireGuard MSI signature is not valid: $($msiSignature.Status)" }
+          New-Item -ItemType Directory -Path wireguard-extracted -Force | Out-Null
+          $target = (Resolve-Path .\wireguard-extracted).Path
+          $process = Start-Process msiexec.exe -ArgumentList @('/a', (Resolve-Path .\wireguard-amd64.msi).Path, '/qn', "TARGETDIR=$target") -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "WireGuard extraction failed with exit code $($process.ExitCode)" }
+          $engine = Get-ChildItem wireguard-extracted -Recurse -File -Filter wireguard.exe | Select-Object -First 1
+          if (-not $engine) { throw 'wireguard.exe was not found in the official MSI' }
+          $engineSignature = Get-AuthenticodeSignature $engine.FullName
+          if ($engineSignature.Status -ne 'Valid') { throw "WireGuard executable signature is not valid: $($engineSignature.Status)" }
+          New-Item -ItemType Directory -Path src-tauri\tools\wireguard -Force | Out-Null
+          Copy-Item $engine.FullName src-tauri\tools\wireguard\wireguard.exe -Force
+
+      - name: Master candidate gate
+        run: npm run verify:master-build
+
+      - name: Shared contract conformance gate
+        run: npm run verify:contracts
+
+      - name: Preventive risk gate
+        run: npm run scan:preventive
+
+      - name: Frontend validation
+        run: |
+          npm run lint
+          npm test
+          npm run build
+
+      - name: Rust formatting
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+
+      - name: Refresh Rust lockfile
+        run: cargo generate-lockfile --manifest-path src-tauri/Cargo.toml
+
+      - name: Rust tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml --all-targets --locked
+
+      - name: Rust compile
+        run: cargo check --manifest-path src-tauri/Cargo.toml --locked --target x86_64-pc-windows-msvc
+
+      - name: Live TVMaze and Cinemeta metadata acceptance
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          New-Item -ItemType Directory -Path validation-logs -Force | Out-Null
+          cmd /d /s /c "npm run test:metadata-live > validation-logs\live-metadata.log 2>&1"
+          $exitCode = $LASTEXITCODE
+          $log = Get-Content validation-logs\live-metadata.log -Raw
+          Write-Host $log
+          if ($exitCode -ne 0) { throw "Live metadata acceptance failed with exit code $exitCode" }
+          if ($log -notmatch 'live_metadata_poster_acceptance_tvmaze_series') {
+            throw 'TVMaze series acceptance test did not execute.'
+          }
+          if ($log -notmatch 'live_metadata_poster_acceptance_cinemeta_movie') {
+            throw 'Cinemeta movie acceptance test did not execute.'
+          }
+          if ($log -notmatch 'test result: ok\. 2 passed; 0 failed') {
+            throw 'Live metadata gate did not report exactly two passing acceptance tests.'
+          }
+
+      - name: Build Windows installers
+        run: npm run tauri build -- --target x86_64-pc-windows-msvc
+
+      - name: Stage and verify installers
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Path installer-staging -Force | Out-Null
+          Get-ChildItem 'src-tauri\target\x86_64-pc-windows-msvc\release\bundle' -Recurse -File |
+            Where-Object { $_.Extension -in '.msi', '.exe' } |
+            Copy-Item -Destination installer-staging -Force
+          $msi = @(Get-ChildItem installer-staging -File -Filter *.msi)
+          $exe = @(Get-ChildItem installer-staging -File -Filter *.exe)
+          if ($msi.Count -lt 1) { throw 'No MSI installer was produced.' }
+          if ($exe.Count -lt 1) { throw 'No NSIS EXE installer was produced.' }
+          $files = Get-ChildItem installer-staging -File | Where-Object { $_.Extension -in '.msi', '.exe' }
+          $checksums = foreach ($file in $files) {
+            $hash = Get-FileHash $file.FullName -Algorithm SHA256
+            "$($hash.Hash)  $($file.Name)"
+          }
+          Set-Content installer-staging\SHA256SUMS.txt $checksums -Encoding utf8
+
+      - name: Upload verified installers
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: installer-staging/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Reconfirm master release authorization
+        if: github.event_name == 'workflow_dispatch'
+        run: npm run verify:master-release
+
+      - name: Publish v2 Build 1.06 release
+        if: github.event_name == 'workflow_dispatch' && success()
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          target_commitish: main
+          name: CinaVault Premium v2 Build 1.06
+          body: |
+            CinaVault Premium v2 Build 1.06, version 2.0.6.
+
+            Windows release containing the verified NSIS EXE installer and MSI package, with SHA-256 checksums. Published only after the master release gate, shared contracts, preventive scan, frontend validation, Rust validation, and live TVMaze/Cinemeta metadata and poster acceptance passed.
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            installer-staging/*.msi
+            installer-staging/*.exe
+            installer-staging/SHA256SUMS.txt

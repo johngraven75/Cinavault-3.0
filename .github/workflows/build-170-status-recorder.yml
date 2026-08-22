@@ -1,0 +1,45 @@
+name: Record Build 171 Status
+
+on:
+  workflow_run:
+    workflows: ["Build 171 Automation"]
+    types: [requested, completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: record-build-171-status
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Record result
+        shell: bash
+        run: |
+          mkdir -p docs/releases
+          cat > docs/releases/build-171-ci-status.json <<EOF
+          {
+            "workflow": "${{ github.event.workflow_run.name }}",
+            "run_id": ${{ github.event.workflow_run.id }},
+            "run_number": ${{ github.event.workflow_run.run_number }},
+            "status": "${{ github.event.workflow_run.status }}",
+            "conclusion": "${{ github.event.workflow_run.conclusion }}",
+            "head_sha": "${{ github.event.workflow_run.head_sha }}",
+            "event": "${{ github.event.workflow_run.event }}",
+            "html_url": "${{ github.event.workflow_run.html_url }}",
+            "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/releases/build-171-ci-status.json
+          git commit -m "docs: record Build 171 CI status [skip ci]" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main

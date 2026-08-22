@@ -1,0 +1,142 @@
+name: Automated Daily Maintenance
+
+on:
+  schedule:
+    - cron: "23 8 * * 1"
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
+      - package-lock.json
+      - .github/workflows/maintenance.yml
+      - scripts/prepare-wireguard.ps1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: repository-maintenance
+  cancel-in-progress: false
+
+jobs:
+  health-check:
+    name: Weekly Repository Health
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache Rust
+        uses: swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit JavaScript dependencies
+        run: npm audit --audit-level=high
+
+      - name: TypeScript regression gate
+        run: npm run lint
+
+      - name: Carry-forward regression suite
+        run: npm run test:all
+
+      - name: Production frontend build
+        run: npm run build
+
+      - name: Prepare genuine Windows Rust and bundle resources
+        run: npm run prepare:wireguard:windows
+
+      - name: Rust formatting verification
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+
+      - name: Rust static analysis
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
+
+      - name: Rust compile verification
+        run: cargo check --manifest-path src-tauri/Cargo.toml --all-targets
+
+  stale-management:
+    name: Stale Issue and Pull Request Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark inactive work
+        uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 45
+          days-before-close: 14
+          stale-issue-message: "This issue has been inactive for 45 days. Add current reproduction details or implementation status to keep it open."
+          stale-pr-message: "This pull request has been inactive for 45 days. Rebase it on main and confirm CI status to keep it open."
+          close-issue-message: "Closed automatically after the stale grace period. Reopen with current details if the issue still applies."
+          close-pr-message: "Closed automatically after the stale grace period. Reopen or replace it with a fresh branch if work resumes."
+          exempt-issue-labels: "pinned,security,release-blocker"
+          exempt-pr-labels: "pinned,security,release-blocker"
+
+  artifact-cleanup:
+    name: Expire Old Workflow Artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove old artifacts
+        uses: c-hive/gha-remove-artifacts@44fc7acaf1b3d0987da0e8d4707a989d80e9554b # v1
+        with:
+          age: "30 days"
+          skip-recent: 5
+
+  failure-report:
+    name: Report Maintenance Failure
+    needs:
+      - health-check
+      - stale-management
+      - artifact-cleanup
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open maintenance issue
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const title = `Automated maintenance failure: ${context.runNumber}`;
+            const body = [
+              "The scheduled repository maintenance workflow failed.",
+              "",
+              `Workflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              "",
+              "No source files were changed automatically. Review the failed job logs and repair the cause through a normal branch and pull request."
+            ].join("\n");
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: "automation,maintenance"
+            });
+            if (!existing.data.some(issue => issue.title === title)) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ["automation", "maintenance"]
+              });
+            }

@@ -1,0 +1,14 @@
+{
+  "_plugin": "Chapter Segments (MS-C)",
+  "_key": "jf-chapter-segments",
+  "_category": "Playback",
+  "_platform": "jellyfin",
+  "_description": "Auto-detect and skip intros, outros, and recaps.",
+  "enabled": true,
+  "auto_detect": true,
+  "skip_intro": true,
+  "skip_outro": true,
+  "skip_recap": true,
+  "min_segment_seconds": 10,
+  "max_intro_seconds": 300
+}

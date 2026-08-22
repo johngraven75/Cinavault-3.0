@@ -1,0 +1,12 @@
+{
+  "_plugin": "FFprobe",
+  "_key": "ffprobe",
+  "_category": "Analysis",
+  "_description": "Media analysis companion to FFmpeg. Extracts codec, resolution, duration, and metadata.",
+  "enabled": true,
+  "output_format": "json",
+  "show_streams": true,
+  "show_format": true,
+  "show_chapters": true,
+  "count_frames": false
+}
