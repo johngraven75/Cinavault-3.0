@@ -1,6 +1,6 @@
 [package]
 name = "cinavault-server"
-version = "3.0.0-alpha.2"
+version = "3.0.0-alpha.3"
 edition = "2021"
 description = "CinaVault 3.0 loopback service foundation"
 license = "GPL-3.0-or-later"
@@ -10,6 +10,9 @@ axum = "0.7.9"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Storage_FileSystem"] }
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

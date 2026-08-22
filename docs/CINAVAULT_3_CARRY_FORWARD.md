@@ -12,6 +12,12 @@ Validation: TypeScript strict type checking and the Vite production build pass. 
 
 ## Connector and integration
 
+
+
+.
+
+
+
 A new standalone local service contract is defined at `contracts/v3/cinavault-service-foundation.openapi.yaml`. The service exposes `/health`, `/Cinevault/Volumes`, and `/Cinevault/Volumes/ReconcilePlan`. It binds to `127.0.0.1:8097` by default and requires an explicit bind address to listen elsewhere.
 
 The reconcile endpoint rejects any request with `dry_run: false` using HTTP 409. No external network listener, public firewall rule, UNC credential, Windows service registration, or remote-access feature is enabled in this foundation build.
@@ -25,7 +31,7 @@ Validation: `cargo fmt --check` passes. `cargo test` passes with five tests cove
 ## Completion
 
 | Item | Result |
-|---|---|
+| --- | --- |
 | Independent private repository | Created: `johngraven75/Cinavault-3.0` |
 | Original CinaVault Premium repository | Not modified by this build workflow |
 | Frontend strict type check | Passed |
@@ -60,7 +66,7 @@ The service stores a versioned `volumes.v1.json` registry in service-local appli
 ### Verification
 
 | Item | Result |
-|---|---|
+| --- | --- |
 | Service formatting | Passed: `cargo fmt --check` |
 | Service safety and route tests | Passed: 10 tests |
 | Desktop strict type check | Passed |
@@ -71,3 +77,35 @@ The service stores a versioned `volumes.v1.json` registry in service-local appli
 ### Next recommended build
 
 Add real Windows volume identity discovery and a health probe that records reachability without mounting a share or altering registry data. After that, design a read-only recursive inventory proposal with an explicit diff and user approval gate before any catalogue or filesystem write is introduced.
+
+
+## Foundation Build 3 — Windows-Aware Volume Identity and Route Probe
+
+### Purpose
+
+The third foundation build adds a transient, non-mutating route probe for registered volumes. It reports route availability and a durable Windows volume identity where Windows exposes one, without changing a volume registration, library record, source route, or filesystem object.
+
+### Front end
+
+Not applicable. The existing desktop client is unchanged and no service-status interface has been introduced.
+
+### Connector and integration
+
+The loopback-only contract now supports `POST /Cinevault/Volumes/{id}/Probe`. The request accepts only a registered volume identifier. Offline and unverified volumes return no route or identity, while an unavailable route returns an explicit `unavailable` status without removing the registration.
+
+### Back end
+
+On Windows, the service uses the native volume API to obtain the containing volume path, volume GUID, serial number, and filesystem name for an already registered route. If Windows cannot expose a volume identity, or on non-Windows platforms, the response uses a plainly labelled path-fingerprint fallback. The result is never persisted in `volumes.v1.json`.
+
+### Verification
+
+| Item | Result |
+|---|---|
+| Service formatting | Passed: `cargo fmt --check` |
+| Linux service suite | Passed: 13 tests |
+| Windows source validation | Passed: `cargo check --target x86_64-pc-windows-gnu` |
+| Release authorization | **False**; the probe is not a Windows Service or installer release |
+
+### Next recommended build
+
+Implement a scheduled, non-mutating health-probe policy only after defining administrator opt-in, backoff, offline-volume handling, and a local audit record. Do not introduce recursive inventory, catalogue writes, source repair, or remote access before a separate approval package.

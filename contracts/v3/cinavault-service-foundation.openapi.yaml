@@ -1,11 +1,12 @@
 openapi: 3.1.0
 info:
   title: CinaVault 3.0 Service Foundation API
-  version: 3.0.0-alpha.2
+  version: 3.0.0-alpha.3
   description: |
     Loopback-first service contract for CinaVault 3.0. This milestone persists
-    approved volume metadata locally and supports bounded, read-only source inspection.
-    It does not mount sources, persist credentials, recurse into directories, or write a catalogue.
+    approved volume metadata, supports bounded read-only source inspection, and
+    exposes a transient route probe. It does not mount sources, persist credentials,
+    recurse into directories, write a catalogue, or update a registry from a probe.
 servers:
   - url: http://127.0.0.1:8097
     description: Default local-only listener
@@ -80,6 +81,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+  /Cinevault/Volumes/{id}/Probe:
+    post:
+      summary: Perform a non-mutating reachability and identity probe for one registered volume
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Transient probe result. Offline, unverified, and unavailable states return no identity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeProbe'
+        '404':
+          description: No registered volume has the supplied identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
   /Cinevault/Volumes/ReconcilePlan:
     post:
       summary: Produce a non-destructive dry-run volume reconciliation plan
@@ -109,8 +131,8 @@ components:
       required: [service, version, contract_version, bind_policy]
       properties:
         service: { type: string }
-        version: { type: string, example: 3.0.0-alpha.2 }
-        contract_version: { type: string, example: v3alpha2 }
+        version: { type: string, example: 3.0.0-alpha.3 }
+        contract_version: { type: string, example: v3alpha3 }
         bind_policy: { type: string }
     VolumeRoute:
       type: object
@@ -155,6 +177,27 @@ components:
           maxItems: 100
           items: { $ref: '#/components/schemas/SourceEntrySample' }
         truncated: { type: boolean }
+        message: { type: string }
+    VolumeIdentity:
+      type: object
+      required: [kind, value]
+      properties:
+        kind: { type: string, enum: [windows_volume_guid, path_fingerprint] }
+        value: { type: string }
+        volume_path: { type: [string, 'null'] }
+        serial_number: { type: [string, 'null'] }
+        filesystem: { type: [string, 'null'] }
+    VolumeProbe:
+      type: object
+      required: [volume_id, status, identity, message]
+      properties:
+        volume_id: { type: string }
+        status: { type: string, enum: [ready, offline, unverified, unavailable] }
+        route: { type: [string, 'null'] }
+        identity:
+          oneOf:
+            - $ref: '#/components/schemas/VolumeIdentity'
+            - type: 'null'
         message: { type: string }
     ReconcileRequest:
       type: object

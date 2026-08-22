@@ -77,7 +77,7 @@ async fn health_endpoint_reports_loopback_only_foundation_policy() {
     assert_eq!(response.status(), StatusCode::OK);
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     let payload: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(payload["contract_version"], "v3alpha2");
+    assert_eq!(payload["contract_version"], "v3alpha3");
     assert!(payload["bind_policy"]
         .as_str()
         .unwrap()
@@ -370,6 +370,153 @@ async fn smb_registration_requires_a_canonical_unc_route() {
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+
+    fs::remove_dir_all(state_directory).unwrap();
+}
+
+#[tokio::test]
+async fn verified_registered_volume_reports_transient_route_identity_without_registry_mutation() {
+    let state_directory = temporary_state_directory();
+    let registry_path = state_directory.join("volumes.v1.json");
+    let source_directory = state_directory.join("source");
+    fs::create_dir_all(&source_directory).unwrap();
+    let volume = local_volume(
+        "probe-ready",
+        &source_directory,
+        VolumeHealth::Online,
+        SentinelStatus::Verified,
+    );
+    let state = AppState::with_registry_path(&registry_path).unwrap();
+    assert_eq!(
+        register_volume_via_api(state.clone(), volume).await,
+        StatusCode::CREATED
+    );
+    let registry_before = fs::read(&registry_path).unwrap();
+
+    let response = build_router(state)
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/Cinevault/Volumes/probe-ready/Probe")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let probe: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(probe["status"], "ready");
+    assert_eq!(
+        probe["route"],
+        source_directory.to_string_lossy().to_string()
+    );
+    assert!(probe["identity"]["value"]
+        .as_str()
+        .unwrap()
+        .starts_with("path:"));
+    assert_eq!(probe["identity"]["kind"], "path_fingerprint");
+    assert_eq!(fs::read(&registry_path).unwrap(), registry_before);
+
+    fs::remove_dir_all(state_directory).unwrap();
+}
+
+#[tokio::test]
+async fn offline_and_unverified_volumes_skip_probe_before_reading_route() {
+    for (volume_id, health, sentinel, expected_status) in [
+        (
+            "probe-offline",
+            VolumeHealth::Offline,
+            SentinelStatus::Verified,
+            "offline",
+        ),
+        (
+            "probe-unverified",
+            VolumeHealth::Online,
+            SentinelStatus::Missing,
+            "unverified",
+        ),
+    ] {
+        let state_directory = temporary_state_directory();
+        let registry_path = state_directory.join("volumes.v1.json");
+        let unavailable_source = state_directory.join("not-present");
+        let volume = local_volume(volume_id, &unavailable_source, health, sentinel);
+        let state = AppState::with_registry_path(&registry_path).unwrap();
+        assert_eq!(
+            register_volume_via_api(state.clone(), volume).await,
+            StatusCode::CREATED
+        );
+
+        let response = build_router(state)
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri(format!("/Cinevault/Volumes/{volume_id}/Probe"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let probe: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(probe["status"], expected_status);
+        assert!(probe["route"].is_null());
+        assert!(probe["identity"].is_null());
+
+        fs::remove_dir_all(state_directory).unwrap();
+    }
+}
+
+#[tokio::test]
+async fn unavailable_and_unknown_volumes_return_safe_probe_responses() {
+    let state_directory = temporary_state_directory();
+    let registry_path = state_directory.join("volumes.v1.json");
+    let unavailable_source = state_directory.join("not-present");
+    let state = AppState::with_registry_path(&registry_path).unwrap();
+    assert_eq!(
+        register_volume_via_api(
+            state.clone(),
+            local_volume(
+                "probe-unavailable",
+                &unavailable_source,
+                VolumeHealth::Online,
+                SentinelStatus::Verified,
+            ),
+        )
+        .await,
+        StatusCode::CREATED
+    );
+
+    let unavailable_response = build_router(state.clone())
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/Cinevault/Volumes/probe-unavailable/Probe")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(unavailable_response.status(), StatusCode::OK);
+    let bytes = to_bytes(unavailable_response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let unavailable: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(unavailable["status"], "unavailable");
+    assert!(unavailable["identity"].is_null());
+
+    let unknown_response = build_router(state)
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/Cinevault/Volumes/not-registered/Probe")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(unknown_response.status(), StatusCode::NOT_FOUND);
 
     fs::remove_dir_all(state_directory).unwrap();
 }

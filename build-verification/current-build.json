@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "build": "v3.0.0-foundation.2",
+  "build": "v3.0.0-foundation.3",
   "status": "in_progress",
   "releaseAuthorized": false,
   "platforms": ["windows", "android", "ios"],
@@ -8,20 +8,20 @@
   "phases": {
     "repositoryAudit": {"status": "verified", "evidence": "Independent private repository created from the documented Premium baseline at a1f1d96."},
     "rootCauseDiagnosis": {"status": "verified", "evidence": "Technical-design review identified the desktop-to-service boundary and unsafe-storage gaps."},
-    "implementation": {"status": "in_progress", "evidence": "Loopback service now includes durable local volume registration and bounded read-only inspection; scanning and catalogue writes remain disabled."},
-    "dependencyConfiguration": {"status": "fixed_and_verified", "evidence": "Rust service dependency versions were pinned for the available compiler and compiled successfully."},
-    "staticReview": {"status": "in_progress", "evidence": "Rust formatting, service tests, TypeScript strict type checks, and the desktop build pass; Windows service review remains pending."},
-    "cleanBuild": {"status": "in_progress", "evidence": "Frontend production build and alpha.2 service crate compile pass; Windows installer and service packaging remain pending."},
-    "automatedTests": {"status": "in_progress", "evidence": "Service suite passes 10 safety, persistence, and route tests; inherited desktop suite passes 25 tests, but release validation remains pending."},
+    "implementation": {"status": "in_progress", "evidence": "Loopback service now includes durable registration, bounded inspection, and a transient Windows-aware volume identity probe; scanning and catalogue writes remain disabled."},
+    "dependencyConfiguration": {"status": "fixed_and_verified", "evidence": "The Rust toolchain includes a Windows GNU target and the Windows API binding features required by the native identity probe."},
+    "staticReview": {"status": "in_progress", "evidence": "Rust formatting, Linux service tests, a Windows cross-target check, TypeScript strict type checks, and the desktop build pass; service review remains pending."},
+    "cleanBuild": {"status": "in_progress", "evidence": "Frontend production build, alpha.3 service crate compile, and Windows cross-target type check pass; installer and service packaging remain pending."},
+    "automatedTests": {"status": "in_progress", "evidence": "Service suite passes 13 safety, persistence, inspection, and probe tests; inherited desktop suite passes 25 tests, but release validation remains pending."},
     "runtimeUi": {"status": "not_applicable", "evidence": "This milestone adds no UI change; service API is validated in-process and desktop wiring is deferred."},
     "persistenceMigration": {"status": "in_progress", "evidence": "A versioned local volume registry persists only approved source metadata with a backup; catalogue migration remains intentionally out of scope."},
-    "networkApi": {"status": "fixed_and_verified", "evidence": "Loopback health, volume registration, bounded inspection, and dry-run reconciliation routes are tested; write-capable reconciliation returns HTTP 409."},
-    "securityPrivacy": {"status": "fixed_and_verified", "evidence": "The service defaults to loopback, stores no credentials, accepts only registered volume identifiers for inspection, and rejects write-capable reconciliation."},
-    "performanceReliability": {"status": "in_progress", "evidence": "Inspection is limited to 100 immediate entries with no recursion; performance targets and network-volume reliability require later implementation."},
+    "networkApi": {"status": "fixed_and_verified", "evidence": "Loopback health, registration, bounded inspection, transient route probing, and dry-run reconciliation routes are tested; write-capable reconciliation returns HTTP 409."},
+    "securityPrivacy": {"status": "fixed_and_verified", "evidence": "The service defaults to loopback, stores no credentials, accepts only registered identifiers for inspection or probing, persists no probe result, and rejects write-capable reconciliation."},
+    "performanceReliability": {"status": "in_progress", "evidence": "Inspection is limited to 100 immediate entries and probing performs only a bounded readability check; network-volume reliability requires later implementation."},
     "crossPlatformParity": {"status": "not_applicable", "evidence": "CinaVault 3.0 is establishing a Windows service foundation; Android and iOS changes are outside this milestone."},
     "packaging": {"status": "in_progress", "evidence": "Desktop MSI and NSIS configuration are retained, while server WiX packaging is a later approved milestone."},
     "installationLaunch": {"status": "not_applicable", "evidence": "No production Windows Service installer is claimed in the foundation milestone; validation requires a Windows runner."},
-    "finalRegression": {"status": "in_progress", "evidence": "Alpha.2 service and inherited frontend tests pass; release authorization remains intentionally false pending Windows service and installer validation."}
+    "finalRegression": {"status": "in_progress", "evidence": "Alpha.3 service tests and Windows cross-target check pass alongside inherited frontend tests; release authorization remains false pending Windows service and installer validation."}
   },
   "acceptanceCriteria": {
     "liveMetadataPull": {"status": "not_applicable", "evidence": "Metadata-provider changes are outside the standalone service and volume-foundation milestone."},

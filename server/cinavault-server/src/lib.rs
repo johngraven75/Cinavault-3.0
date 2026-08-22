@@ -14,8 +14,11 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+mod volume_probe;
+pub use volume_probe::{VolumeIdentity, VolumeIdentityKind};
+
 pub const SERVICE_NAME: &str = "CinaVault 3.0 Service Foundation";
-pub const CONTRACT_VERSION: &str = "v3alpha2";
+pub const CONTRACT_VERSION: &str = "v3alpha3";
 const REGISTRY_SCHEMA_VERSION: u16 = 1;
 const INSPECTION_ENTRY_LIMIT: usize = 100;
 
@@ -134,6 +137,24 @@ pub struct SourceInspection {
     pub route: Option<String>,
     pub entries: Vec<SourceEntrySample>,
     pub truncated: bool,
+    pub message: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ProbeStatus {
+    Ready,
+    Offline,
+    Unverified,
+    Unavailable,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct VolumeProbe {
+    pub volume_id: String,
+    pub status: ProbeStatus,
+    pub route: Option<String>,
+    pub identity: Option<VolumeIdentity>,
     pub message: String,
 }
 
@@ -346,6 +367,68 @@ impl VolumeRegistry {
         })
     }
 
+    fn probe(&self, volume_id: &str) -> Result<VolumeProbe, RegistryError> {
+        let volume = self
+            .volumes
+            .get(volume_id)
+            .ok_or_else(|| RegistryError::NotFound(volume_id.to_owned()))?;
+
+        if volume.health == VolumeHealth::Offline {
+            return Ok(VolumeProbe {
+                volume_id: volume.id.clone(),
+                status: ProbeStatus::Offline,
+                route: None,
+                identity: None,
+                message: "Volume is marked offline; route probing is skipped and registry state is unchanged."
+                    .to_owned(),
+            });
+        }
+
+        if !volume.sentinel_status.permits_reconcile() {
+            return Ok(VolumeProbe {
+                volume_id: volume.id.clone(),
+                status: ProbeStatus::Unverified,
+                route: None,
+                identity: None,
+                message: "Volume identity is unverified; route probing is skipped before accessing a source route."
+                    .to_owned(),
+            });
+        }
+
+        let route = volume
+            .routes
+            .iter()
+            .filter(|route| route.healthy)
+            .min_by_key(|route| route.priority);
+        let Some(route) = route else {
+            return Ok(VolumeProbe {
+                volume_id: volume.id.clone(),
+                status: ProbeStatus::Unavailable,
+                route: None,
+                identity: None,
+                message: "No healthy registered route is available for this volume.".to_owned(),
+            });
+        };
+
+        match volume_probe::probe_route(Path::new(&route.path)) {
+            Ok(identity) => Ok(VolumeProbe {
+                volume_id: volume.id.clone(),
+                status: ProbeStatus::Ready,
+                route: Some(route.path.clone()),
+                identity: Some(identity),
+                message: "Read-only route probe completed; no registry, source, or catalogue state was changed."
+                    .to_owned(),
+            }),
+            Err(error) => Ok(VolumeProbe {
+                volume_id: volume.id.clone(),
+                status: ProbeStatus::Unavailable,
+                route: Some(route.path.clone()),
+                identity: None,
+                message: format!("Registered route is unavailable or unreadable: {error}"),
+            }),
+        }
+    }
+
     fn persist(&self, volumes: &BTreeMap<String, Volume>) -> Result<(), RegistryError> {
         let Some(path) = &self.path else {
             return Err(RegistryError::Io(
@@ -555,6 +638,7 @@ pub fn build_router(state: AppState) -> Router {
             get(list_volumes).post(register_volume),
         )
         .route("/Cinevault/Volumes/:id/Inspect", post(inspect_volume))
+        .route("/Cinevault/Volumes/:id/Probe", post(probe_volume))
         .route("/Cinevault/Volumes/ReconcilePlan", post(reconcile_plan))
         .with_state(Arc::new(state))
 }
@@ -630,6 +714,17 @@ async fn inspect_volume(
         .inspect(&volume_id)
         .map_err(registry_error_response)?;
     Ok(Json(inspection))
+}
+
+async fn probe_volume(
+    State(state): State<Arc<AppState>>,
+    RoutePath(volume_id): RoutePath<String>,
+) -> Result<Json<VolumeProbe>, (StatusCode, Json<ApiError>)> {
+    let registry = state.registry.read().map_err(|_| state_error())?;
+    let probe = registry
+        .probe(&volume_id)
+        .map_err(registry_error_response)?;
+    Ok(Json(probe))
 }
 
 async fn reconcile_plan(
