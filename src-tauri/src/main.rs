@@ -15,5 +15,5 @@ Some(true),
 */
 
 fn main() {
-    cinavault_premium_lib::run();
+    cinavault_3_lib::run();
 }

@@ -299,6 +299,8 @@ pub fn run() {
             nas_devices::wd_mycloud_disconnect,
             nas_devices::wd_mycloud_get_status,
             nas_devices::wd_mycloud_add_library,
+            nas_devices::list_nas_shares,
+            nas_devices::browse_nas_path,
             build_identity::get_current_build_info,
             open_external_url,
             get_system_info,
