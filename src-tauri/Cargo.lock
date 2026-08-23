@@ -573,8 +573,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "cinavault-premium"
-version = "2.0.14"
+name = "cinavault-3"
+version = "3.0.0"
 dependencies = [
  "argon2",
  "axum",
