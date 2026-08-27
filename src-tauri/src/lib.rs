@@ -294,6 +294,8 @@ pub fn run() {
             nas_devices::synology_connect,
             nas_devices::synology_disconnect,
             nas_devices::synology_get_status,
+            nas_devices::list_nas_shares,
+            nas_devices::browse_nas_path,
             nas_devices::synology_add_library,
             nas_devices::wd_mycloud_connect,
             nas_devices::wd_mycloud_disconnect,

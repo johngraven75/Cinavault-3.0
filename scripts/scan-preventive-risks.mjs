@@ -57,7 +57,7 @@ requireMarker("src/components/Header.tsx", 'import { BUILD_INFO } from "../build
 requireMarker("src/components/Sidebar.tsx", 'import { BUILD_INFO } from "../buildInfo"', "Sidebar build label must use the authoritative build identity");
 requireMarker("src-tauri/src/build_identity.rs", 'include_str!("../../build-version.json")', "Rust build identity must derive from build-version.json");
 requireMarker("src-tauri/src/lib.rs", "build_identity::get_current_build_info", "Tauri runtime app info must use the typed manifest-driven build identity");
-requireMarker("src-tauri/src/main.rs", "cinavault_premium_lib::run();", "Windows binary entrypoint must execute the repaired shared Tauri runtime");
+requireMarker("src-tauri/src/main.rs", "cinavault_3_lib::run();", "Windows binary entrypoint must execute the repaired shared Tauri runtime");
 requireMarker(".github/workflows/release-build-170.yml", "npm run verify:master-release", "Master-gated packaging must remain blocked by the master release gate");
 
 const packageJson = JSON.parse(read("package.json"));

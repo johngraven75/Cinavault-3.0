@@ -2,10 +2,10 @@
 // Synology QuickConnect + WD My Cloud Home
 use crate::AppState;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::json;
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 #[cfg(target_os = "windows")]
 use std::process::Command;
 use tauri::State;
@@ -519,53 +519,64 @@ fn ensure_network_source_reachable(source_path: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn normalize_nas_device_type(device_type: &str) -> Option<&'static str> {
-    let normalized = device_type
-        .trim()
-        .to_ascii_lowercase()
-        .replace([' ', '-'], "_");
-    match normalized.as_str() {
-        "synology" => Some("synology_connection"),
-        "wd_mycloud" | "wdmycloud" => Some("wd_mycloud_connection"),
-        _ => None,
+fn synology_list_path(
+    host: &str,
+    port: u16,
+    use_https: bool,
+    sid: &str,
+    folder_path: &str,
+) -> Result<Vec<serde_json::Value>, String> {
+    let scheme = if use_https { "https" } else { "http" };
+    let url = format!("{}://{}:{}/webapi/entry.cgi", scheme, host, port);
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(20))
+        .danger_accept_invalid_certs(true)
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let resp = client
+        .get(&url)
+        .query(&[
+            ("api", "SYNO.FileStation.List"),
+            ("version", "2"),
+            ("method", "list"),
+            ("folder_path", folder_path),
+            ("additional", "[\"real_path\",\"size\",\"type\"]"),
+            ("_sid", sid),
+        ])
+        .send()
+        .map_err(|e| format!("Synology browse request failed: {e}"))?;
+
+    let json: serde_json::Value = resp
+        .json()
+        .map_err(|e| format!("Synology browse response parse failed: {e}"))?;
+
+    if !json["success"].as_bool().unwrap_or(false) {
+        let code = json["error"]["code"].as_u64().unwrap_or(0);
+        return Err(format!(
+            "Synology browse failed for '{folder_path}' (error code {code})"
+        ));
     }
-}
 
-fn read_saved_nas_connection(
-    db: &crate::db::Database,
-    setting_key: &str,
-) -> Result<Option<Value>, String> {
-    db.get_setting_data(setting_key)
-        .map_err(|error| error.to_string())?
-        .filter(|value| !value.trim().is_empty())
-        .map(|value| serde_json::from_str(&value).map_err(|error| error.to_string()))
-        .transpose()
-}
-
-fn connection_libraries(connection: &Value) -> Vec<NasLibrary> {
-    connection["libraries"]
+    let mut entries = json["data"]["files"]
         .as_array()
+        .cloned()
+        .unwrap_or_default()
         .into_iter()
-        .flatten()
-        .filter_map(|library| serde_json::from_value::<NasLibrary>(library.clone()).ok())
-        .collect()
-}
-
-fn list_directory_entries(root: &Path) -> Result<Vec<Value>, String> {
-    let mut entries = std::fs::read_dir(root)
-        .map_err(|error| format!("Unable to read {}: {error}", root.display()))?
-        .filter_map(Result::ok)
         .map(|entry| {
-            let path = entry.path();
-            let metadata = entry.metadata().ok();
-            serde_json::json!({
-                "name": entry.file_name().to_string_lossy(),
-                "path": path.to_string_lossy(),
-                "is_directory": metadata.as_ref().map(|value| value.is_dir()).unwrap_or(false),
-                "size": metadata.as_ref().filter(|value| value.is_file()).map(|value| value.len()).unwrap_or(0),
+            let path = entry["path"].as_str().unwrap_or_default().to_string();
+            let name = entry["name"].as_str().unwrap_or_default().to_string();
+            let is_directory = entry["isdir"].as_bool().unwrap_or(false);
+            let size = entry["additional"]["size"].as_u64().unwrap_or(0);
+            json!({
+                "name": name,
+                "path": path,
+                "is_directory": is_directory,
+                "size": size,
             })
         })
         .collect::<Vec<_>>();
+
     entries.sort_by(|left, right| {
         left["name"]
             .as_str()
@@ -578,56 +589,258 @@ fn list_directory_entries(root: &Path) -> Result<Vec<Value>, String> {
                     .to_ascii_lowercase(),
             )
     });
+
     Ok(entries)
 }
 
-fn share_entries(libraries: &[NasLibrary]) -> Vec<Value> {
-    libraries
+fn synology_browse_path(
+    host: &str,
+    port: u16,
+    use_https: bool,
+    sid: &str,
+    path: &str,
+    recursive: bool,
+    depth: usize,
+) -> Result<Vec<serde_json::Value>, String> {
+    if depth > 32 {
+        return Err("Synology browse recursion limit reached".to_string());
+    }
+
+    let mut entries = synology_list_path(host, port, use_https, sid, path)?;
+    if !recursive {
+        return Ok(entries);
+    }
+
+    let directories = entries
         .iter()
-        .map(|library| {
-            serde_json::json!({
-                "name": library.name,
-                "path": library.path,
-                "share_name": library.share_name,
-                "media_type": library.media_type,
-                "is_directory": true,
-                "size": library.size_bytes,
-            })
+        .filter_map(|entry| {
+            if entry["is_directory"].as_bool().unwrap_or(false) {
+                entry["path"].as_str().map(|value| value.to_string())
+            } else {
+                None
+            }
         })
-        .collect()
+        .collect::<Vec<_>>();
+
+    for dir in directories {
+        entries.extend(synology_browse_path(
+            host,
+            port,
+            use_https,
+            sid,
+            &dir,
+            true,
+            depth + 1,
+        )?);
+    }
+
+    Ok(entries)
 }
 
-fn resolve_browse_path(host: &str, requested_path: &str) -> PathBuf {
-    let trimmed = requested_path.trim();
-    let local = Path::new(trimmed);
-    if local.is_dir() {
-        return local.to_path_buf();
+fn list_local_entries(path: &Path, recursive: bool) -> Result<Vec<serde_json::Value>, String> {
+    if !path.exists() || !path.is_dir() {
+        return Err(format!(
+            "Path is not a readable directory: {}",
+            path.display()
+        ));
     }
 
-    #[cfg(target_os = "windows")]
-    {
-        let relative = trimmed.trim_matches(|character| character == '/' || character == '\\');
-        let mut segments = relative
-            .split(|character| character == '/' || character == '\\')
-            .filter(|segment| !segment.is_empty());
-        let share_name = segments.next().unwrap_or("Public");
-        let mut path = PathBuf::from(network_source_path(host, share_name, trimmed));
-        for segment in segments {
-            path.push(segment);
-        }
-        path
-    }
+    let mut entries = if recursive {
+        walkdir::WalkDir::new(path)
+            .min_depth(1)
+            .follow_links(false)
+            .into_iter()
+            .filter_map(Result::ok)
+            .map(|entry| {
+                let metadata = entry.metadata().ok();
+                json!({
+                    "name": entry.file_name().to_string_lossy(),
+                    "path": entry.path().to_string_lossy(),
+                    "is_directory": entry.file_type().is_dir(),
+                    "size": metadata.as_ref().filter(|value| value.is_file()).map(|value| value.len()).unwrap_or(0),
+                })
+            })
+            .collect::<Vec<_>>()
+    } else {
+        std::fs::read_dir(path)
+            .map_err(|error| format!("Unable to read {}: {error}", path.display()))?
+            .filter_map(Result::ok)
+            .map(|entry| {
+                let metadata = entry.metadata().ok();
+                let entry_path = entry.path();
+                json!({
+                    "name": entry.file_name().to_string_lossy(),
+                    "path": entry_path.to_string_lossy(),
+                    "is_directory": metadata.as_ref().map(|value| value.is_dir()).unwrap_or(false),
+                    "size": metadata.as_ref().filter(|value| value.is_file()).map(|value| value.len()).unwrap_or(0),
+                })
+            })
+            .collect::<Vec<_>>()
+    };
 
-    #[cfg(not(target_os = "windows"))]
-    {
-        let _ = host;
-        PathBuf::from(trimmed)
-    }
+    entries.sort_by(|left, right| {
+        left["path"]
+            .as_str()
+            .unwrap_or_default()
+            .to_ascii_lowercase()
+            .cmp(
+                &right["path"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .to_ascii_lowercase(),
+            )
+    });
+    Ok(entries)
 }
 
 // ════════════════════════════════════════════════════════════
 //  Tauri Commands
 // ════════════════════════════════════════════════════════════
+
+#[tauri::command]
+pub fn list_nas_shares(connection: NasCredentials) -> Result<Vec<NasLibrary>, String> {
+    let resolved_port = connection
+        .port
+        .unwrap_or(if connection.use_https { 443 } else { 80 });
+
+    match connection.device_type.trim().to_ascii_lowercase().as_str() {
+        "synology" => {
+            let host = if connection.host.contains('.')
+                || connection.host.parse::<std::net::IpAddr>().is_ok()
+            {
+                connection.host.clone()
+            } else {
+                resolve_quickconnect(&connection.host)
+                    .unwrap_or_else(|_| format!("{}.quickconnect.to", connection.host))
+            };
+            let synology_port =
+                connection
+                    .port
+                    .unwrap_or(if connection.use_https { 5001 } else { 5000 });
+            let sid = synology_login(
+                &host,
+                synology_port,
+                connection.use_https,
+                &connection.username,
+                &connection.password,
+            )?;
+            synology_get_shares(&host, synology_port, connection.use_https, &sid)
+        }
+        "wd_mycloud" | "wd-mycloud" | "wd" => {
+            let session = wd_mycloud_login(
+                &connection.host,
+                resolved_port,
+                connection.use_https,
+                &connection.username,
+                &connection.password,
+            )?;
+            wd_mycloud_get_shares(
+                &connection.host,
+                resolved_port,
+                connection.use_https,
+                &session,
+            )
+        }
+        other => Err(format!(
+            "Unsupported NAS device type '{other}'. Use 'synology' or 'wd_mycloud'."
+        )),
+    }
+}
+
+#[tauri::command]
+pub fn browse_nas_path(
+    connection: NasCredentials,
+    path: String,
+    recursive: Option<bool>,
+) -> Result<Vec<serde_json::Value>, String> {
+    let recursive = recursive.unwrap_or(false);
+    let browse_path = path.trim();
+    let browse_path = if browse_path.is_empty() {
+        "/"
+    } else {
+        browse_path
+    };
+
+    match connection.device_type.trim().to_ascii_lowercase().as_str() {
+        "synology" => {
+            let host = if connection.host.contains('.')
+                || connection.host.parse::<std::net::IpAddr>().is_ok()
+            {
+                connection.host.clone()
+            } else {
+                resolve_quickconnect(&connection.host)
+                    .unwrap_or_else(|_| format!("{}.quickconnect.to", connection.host))
+            };
+            let synology_port =
+                connection
+                    .port
+                    .unwrap_or(if connection.use_https { 5001 } else { 5000 });
+            let sid = synology_login(
+                &host,
+                synology_port,
+                connection.use_https,
+                &connection.username,
+                &connection.password,
+            )?;
+            synology_browse_path(
+                &host,
+                synology_port,
+                connection.use_https,
+                &sid,
+                browse_path,
+                recursive,
+                0,
+            )
+        }
+        "wd_mycloud" | "wd-mycloud" | "wd" => {
+            let shares = list_nas_shares(connection.clone())?;
+            let share = shares.iter().find(|library| {
+                browse_path == "/"
+                    || browse_path == library.path
+                    || browse_path == library.share_name
+                    || browse_path == format!("/{}", library.share_name)
+            });
+
+            if browse_path == "/" {
+                return Ok(shares
+                    .into_iter()
+                    .map(|library| {
+                        json!({
+                            "name": library.share_name,
+                            "path": library.path,
+                            "is_directory": true,
+                            "size": library.size_bytes,
+                        })
+                    })
+                    .collect());
+            }
+
+            let share = share.ok_or_else(|| {
+                format!("NAS path '{browse_path}' does not match any WD My Cloud share")
+            })?;
+
+            let browse_relative = browse_path
+                .trim_start_matches('/')
+                .strip_prefix(share.share_name.trim_start_matches('/'))
+                .unwrap_or("")
+                .trim_start_matches('/');
+            let share_path = if browse_relative.is_empty() {
+                "/".to_string()
+            } else {
+                format!("/{browse_relative}")
+            };
+
+            let source_path = network_source_path(&connection.host, &share.share_name, &share_path);
+            let local_path = Path::new(&source_path);
+            list_local_entries(local_path, recursive).map_err(|error| {
+                format!("{error}. Ensure the share is mounted and accessible from this machine.")
+            })
+        }
+        other => Err(format!(
+            "Unsupported NAS device type '{other}'. Use 'synology' or 'wd_mycloud'."
+        )),
+    }
+}
 
 /// Connect to a Synology NAS via QuickConnect ID or direct IP.
 /// Resolves the QuickConnect ID, authenticates via DSM API,
@@ -944,9 +1157,10 @@ pub fn browse_nas_path(
 #[cfg(test)]
 mod tests {
     use super::{
-        connection_libraries, network_source_path, normalize_nas_device_type, share_entries,
-        urlencoding_simple, NasLibrary,
+        browse_nas_path, list_local_entries, network_source_path, urlencoding_simple,
+        NasCredentials,
     };
+    use std::time::{SystemTime, UNIX_EPOCH};
 
     #[test]
     fn nas_library_paths_are_scanner_compatible_network_paths() {
@@ -964,67 +1178,43 @@ mod tests {
     }
 
     #[test]
-    fn nas_device_type_aliases_map_to_saved_connection_keys() {
-        assert_eq!(
-            normalize_nas_device_type("Synology"),
-            Some("synology_connection")
-        );
-        assert_eq!(
-            normalize_nas_device_type("WD My Cloud"),
-            Some("wd_mycloud_connection")
-        );
-        assert_eq!(
-            normalize_nas_device_type("wd-mycloud"),
-            Some("wd_mycloud_connection")
-        );
+    fn local_nas_browse_supports_recursive_listing() {
+        let stamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!("cinavault-nas-browse-{stamp}"));
+        std::fs::create_dir_all(root.join("Movies").join("Drama")).unwrap();
+        std::fs::write(
+            root.join("Movies").join("Drama").join("feature.mkv"),
+            b"media",
+        )
+        .unwrap();
+
+        let non_recursive = list_local_entries(root.as_path(), false).unwrap();
+        let recursive = list_local_entries(root.as_path(), true).unwrap();
+
+        assert!(non_recursive.iter().any(|entry| entry["name"] == "Movies"));
+        assert!(recursive.iter().any(|entry| entry["name"] == "feature.mkv"));
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
-    fn connected_nas_libraries_round_trip_from_saved_connection_json() {
-        let connection = serde_json::json!({
-            "libraries": [
-                {
-                    "id": "synology-movies",
-                    "name": "Movies",
-                    "path": "/Movies",
-                    "share_name": "Movies",
-                    "media_type": "movies",
-                    "item_count": 0,
-                    "size_bytes": 42
-                }
-            ]
-        });
-
-        assert_eq!(
-            connection_libraries(&connection),
-            vec![NasLibrary {
-                id: "synology-movies".to_string(),
-                name: "Movies".to_string(),
-                path: "/Movies".to_string(),
-                share_name: "Movies".to_string(),
-                media_type: "movies".to_string(),
-                item_count: 0,
-                size_bytes: 42,
-            }]
-        );
-    }
-
-    #[test]
-    fn browsing_root_share_entries_preserves_share_metadata() {
-        let entries = share_entries(&[NasLibrary {
-            id: "wd-public".to_string(),
-            name: "Public".to_string(),
-            path: "/Public".to_string(),
-            share_name: "Public".to_string(),
-            media_type: "mixed".to_string(),
-            item_count: 0,
-            size_bytes: 0,
-        }]);
-
-        assert_eq!(entries.len(), 1);
-        assert_eq!(entries[0]["name"], "Public");
-        assert_eq!(entries[0]["path"], "/Public");
-        assert_eq!(entries[0]["share_name"], "Public");
-        assert_eq!(entries[0]["is_directory"], true);
+    fn browse_nas_path_rejects_unknown_device_type() {
+        let err = browse_nas_path(
+            NasCredentials {
+                device_type: "invalid".to_string(),
+                host: "nas.local".to_string(),
+                username: "user".to_string(),
+                password: "password".to_string(),
+                port: None,
+                use_https: true,
+            },
+            "/".to_string(),
+            Some(false),
+        )
+        .unwrap_err();
+        assert!(err.contains("Unsupported NAS device type"));
     }
 }
