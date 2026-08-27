@@ -27,7 +27,7 @@ pub struct NasCredentials {
     pub use_https: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct NasLibrary {
     pub id: String,
     pub name: String,
@@ -1094,6 +1094,64 @@ pub fn wd_mycloud_add_library(
         source_path
     );
     Ok(())
+}
+
+/// List shares exposed by currently connected NAS backends.
+#[tauri::command]
+pub fn list_nas_shares(
+    state: State<AppState>,
+    device_type: Option<String>,
+) -> Result<Vec<NasLibrary>, String> {
+    let db = state.db.lock().map_err(|error| error.to_string())?;
+    let mut libraries = Vec::new();
+
+    if let Some(device_type) = device_type
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        let setting_key = normalize_nas_device_type(device_type)
+            .ok_or_else(|| format!("Unsupported NAS device type: {device_type}"))?;
+        if let Some(connection) = read_saved_nas_connection(&db, setting_key)? {
+            libraries.extend(connection_libraries(&connection));
+        }
+    } else {
+        for setting_key in ["synology_connection", "wd_mycloud_connection"] {
+            if let Some(connection) = read_saved_nas_connection(&db, setting_key)? {
+                libraries.extend(connection_libraries(&connection));
+            }
+        }
+    }
+
+    if libraries.is_empty() {
+        return Err("No connected NAS shares were found.".to_string());
+    }
+
+    Ok(libraries)
+}
+
+/// Browse the root shares or a mounted NAS path for a connected device.
+#[tauri::command]
+pub fn browse_nas_path(
+    state: State<AppState>,
+    device_type: String,
+    path: Option<String>,
+) -> Result<Vec<Value>, String> {
+    let db = state.db.lock().map_err(|error| error.to_string())?;
+    let setting_key = normalize_nas_device_type(&device_type)
+        .ok_or_else(|| format!("Unsupported NAS device type: {device_type}"))?;
+    let connection = read_saved_nas_connection(&db, setting_key)?
+        .ok_or_else(|| format!("No active NAS connection found for {device_type}"))?;
+    let libraries = connection_libraries(&connection);
+    let requested_path = path.unwrap_or_default();
+
+    if requested_path.trim().is_empty() || requested_path == "/" || requested_path == "\\" {
+        return Ok(share_entries(&libraries));
+    }
+
+    let host = connection["host"].as_str().unwrap_or_default();
+    let browse_path = resolve_browse_path(host, &requested_path);
+    list_directory_entries(&browse_path)
 }
 
 #[cfg(test)]
