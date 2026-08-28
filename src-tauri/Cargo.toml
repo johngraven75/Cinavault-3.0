@@ -30,7 +30,7 @@ tokio = { version = "1", features = ["full"] }
 tokio-util = { version = "0.7", features = ["io"] }
 axum = "0.8"
 tower-http = { version = "0.6", features = ["cors"] }
-reqwest = { version = "0.12", features = ["json", "stream", "blocking", "rustls-tls", "cookies"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "blocking", "rustls-tls", "cookies"] }
 igd-next = "0.17.1"
 natpmp = { version = "0.5", features = ["tokio"] }
 zip = "2"
