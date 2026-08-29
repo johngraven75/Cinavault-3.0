@@ -45,7 +45,7 @@ dirs = "5"
 env_logger = "0.11"
 open = "5"
 log = "0.4"
-base64 = "0.22"
+base64 = "0.23"
 
 # Backport RUSTSEC-2024-0429 / GHSA-wrw7-89jp-8q8g without a breaking GTK-rs upgrade.
 [patch.crates-io]
