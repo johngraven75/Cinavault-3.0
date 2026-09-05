@@ -1,4 +1,4 @@
-name: CinaVault Premium v2.13 Build 1.13 Windows Validation
+name: CinaVault 3.0 Windows Validation
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: cinavault-premium-v2-14-build-1-14-windows-${{ github.event.pull_request.number || github.ref }}
+  group: cinavault-3-windows-validation-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -36,13 +36,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify v2.14 Build 1.14 identity
+      - name: Read current build identity
+        id: identity
         shell: pwsh
         run: |
           $build = Get-Content build-version.json -Raw | ConvertFrom-Json
-          if ($build.displayName -ne 'v2.14 Build 1.14') { throw "Unexpected displayName: $($build.displayName)" }
-          if ($build.semanticVersion -ne '2.0.14') { throw "Unexpected semanticVersion: $($build.semanticVersion)" }
-          if ($build.releaseTag -ne 'v2-build-1.14') { throw "Unexpected releaseTag: $($build.releaseTag)" }
+          foreach ($field in @('displayName', 'semanticVersion', 'releaseTag')) {
+            if ([string]::IsNullOrWhiteSpace($build.$field)) { throw "build-version.json missing $field" }
+          }
+          if ($build.semanticVersion -ne '3.0.0') { throw "Unexpected semanticVersion: $($build.semanticVersion)" }
+          if ($build.releaseTag -ne 'v3-build-1') { throw "Unexpected releaseTag: $($build.releaseTag)" }
+          "display_name=$($build.displayName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "artifact_slug=$($build.releaseTag.Replace('.', '-'))" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           $build | ConvertTo-Json -Depth 10 | Set-Content validation-logs/build-identity.json
 
       - name: Shared contracts and preventive gates
@@ -67,17 +72,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          Invoke-WebRequest -Uri $env:WIREGUARD_MSI_URL -OutFile wireguard-amd64.msi
-          $msiSignature = Get-AuthenticodeSignature .\wireguard-amd64.msi
-          if ($msiSignature.Status -ne 'Valid') { throw "WireGuard MSI signature is not valid: $($msiSignature.Status)" }
-          New-Item -ItemType Directory -Path wireguard-extracted -Force | Out-Null
-          $target = (Resolve-Path .\wireguard-extracted).Path
-          $process = Start-Process msiexec.exe -ArgumentList @('/a', (Resolve-Path .\wireguard-amd64.msi).Path, '/qn', "TARGETDIR=$target") -Wait -PassThru
-          if ($process.ExitCode -ne 0) { throw "WireGuard extraction failed: $($process.ExitCode)" }
-          $wireGuard = Get-ChildItem wireguard-extracted -Recurse -File -Filter wireguard.exe | Select-Object -First 1
-          if (-not $wireGuard) { throw 'wireguard.exe was not found.' }
-          New-Item -ItemType Directory -Path src-tauri\tools\wireguard -Force | Out-Null
-          Copy-Item $wireGuard.FullName src-tauri\tools\wireguard\wireguard.exe -Force
+          npm run prepare:wireguard:windows
           New-Item -ItemType Directory -Path src-tauri\tools\cloudflared -Force | Out-Null
           Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe' -OutFile src-tauri\tools\cloudflared\cloudflared.exe
           if ((Get-Item src-tauri\tools\cloudflared\cloudflared.exe).Length -lt 10000000) { throw 'cloudflared binary is unexpectedly small.' }
@@ -108,7 +103,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: CinaVault-Premium-v2.14-Build-1.14-Windows-Diagnostics
+          name: CinaVault-${{ steps.identity.outputs.artifact_slug || 'current' }}-Windows-Diagnostics
           path: validation-logs/
           if-no-files-found: warn
           retention-days: 90

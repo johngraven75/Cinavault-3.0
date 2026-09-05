@@ -2,22 +2,29 @@
   "schemaVersion": 1,
   "contractId": "cinavault-platform-parity-v1",
   "reference": {
-    "repository": "johngraven75/CinaVault-Premium",
-    "release": "v2-build-1.13",
-    "displayName": "v2.13 Build 1.13",
-    "semanticVersion": "2.0.13",
+    "repository": "johngraven75/Cinavault-3.0",
+    "release": "v3-build-1",
+    "displayName": "v3.0 Build 1",
+    "semanticVersion": "3.0.0",
     "platform": "windows"
   },
   "includedRepositories": [
-    "johngraven75/CinaVault-Premium",
-    "johngraven75/cinavault-android",
-    "johngraven75/Cinavault-Server-Premium-Edition-iOS"
+    "johngraven75/Cinavault-3.0",
+    "johngraven75/Cinavault-3.0-Linux",
+    "johngraven75/Cinavault-3.0-Android",
+    "johngraven75/Cinavault-3.0-iOS"
   ],
   "excludedRepositories": [
     {
       "repository": "johngraven75/Cinavault-Reimagined",
-      "reason": "Work in this repository is exclusive to that repository and must not be copied into or out of the Premium parity program."
+      "reason": "Work in this repository is exclusive to that repository and must not be copied into or out of the CinaVault 3.0 OS edition program."
     }
+  ],
+  "platforms": [
+    { "id": "windows", "label": "Windows", "repository": "johngraven75/Cinavault-3.0", "required": true },
+    { "id": "linux-ubuntu", "label": "Ubuntu Linux", "repository": "johngraven75/Cinavault-3.0-Linux", "required": true },
+    { "id": "android", "label": "Android", "repository": "johngraven75/Cinavault-3.0-Android", "required": true },
+    { "id": "ios", "label": "iOS", "repository": "johngraven75/Cinavault-3.0-iOS", "required": true }
   ],
   "destinations": [
     { "id": "library", "label": "Library", "required": true },
@@ -132,6 +139,6 @@
     "fullFileReplacementsOnly": true,
     "noRegressions": true,
     "crossPlatformAuditRequired": true,
-    "releaseRule": "A Windows design, function, option, or defect change creates matching Android and iOS parity work before the parity program is considered complete."
+    "releaseRule": "A Windows design, function, option, or defect change creates matching Ubuntu Linux, Android, and iOS parity work before the OS edition program is considered complete."
   }
 }

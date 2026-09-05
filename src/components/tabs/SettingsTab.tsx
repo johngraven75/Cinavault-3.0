@@ -1,9 +1,10 @@
-// CinaVault Premium — Settings Tab (Premium UI defaults + Persistent Settings)
+// CinaVault 3.0 — Settings Tab (platform defaults + persistent settings)
 import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../store/appStore";
 import { THEME_PRESETS, applyTheme } from "../../themes";
+import { BUILD_INFO } from "../../buildInfo";
 import {
   Settings,
   Palette,
@@ -64,9 +65,9 @@ export default function SettingsTab() {
     setSaving(false);
   }, [getPersistedState, addStatusMessage]);
 
-  // ── Reset to premium defaults ──
+  // ── Reset to platform defaults ──
   const handleReset = useCallback(() => {
-    const premiumDefaults: Record<string, string> = {
+    const platformDefaults: Record<string, string> = {
       theme: "vidhub_flagship",
       splash_enabled: "true",
       sidebar_collapsed: "false",
@@ -89,13 +90,13 @@ export default function SettingsTab() {
       starfield_header: "true",
       window_opacity: "100",
     };
-    for (const [k, v] of Object.entries(premiumDefaults)) {
+    for (const [k, v] of Object.entries(platformDefaults)) {
       setSetting(k, v);
     }
     setTheme("vidhub_flagship");
     applyTheme("vidhub_flagship");
     addStatusMessage(
-      "Settings reset to Premium defaults — all features enabled",
+      "Settings reset to CinaVault 3.0 defaults - all features enabled",
     );
   }, [setSetting, setTheme, addStatusMessage]);
 
@@ -149,7 +150,7 @@ export default function SettingsTab() {
             onClick={handleReset}
             className="w-full cv-btn text-xs py-2.5 flex items-center justify-center gap-1.5 bg-white/5"
           >
-            <RotateCcw size={12} /> Reset to Premium Defaults
+            <RotateCcw size={12} /> Reset to 3.0 Defaults
           </button>
         </div>
       </div>
@@ -167,7 +168,7 @@ export default function SettingsTab() {
             <>
               <SectionHeader
                 title="Themes & Skins"
-                desc="Choose a visual theme or Kodi-inspired CinaVault skin — Premium includes all presets by default"
+                desc="Choose a visual theme or Kodi-inspired CinaVault skin - 3.0 includes all presets by default"
               />
               <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
                 {THEME_PRESETS.map((theme) => (
@@ -267,7 +268,7 @@ export default function SettingsTab() {
             <>
               <SectionHeader
                 title="Playback Controls"
-                desc="All premium playback features enabled by default"
+                desc="All 3.0 playback features enabled by default"
               />
               <ToggleRow
                 label="Skip Intro Detection"
@@ -327,7 +328,7 @@ export default function SettingsTab() {
             <>
               <SectionHeader
                 title="Library Features"
-                desc="Smart library management — all Premium features active"
+                desc="Smart library management - all 3.0 features active"
               />
               <ToggleRow
                 label="Smart Collections"
@@ -361,7 +362,7 @@ export default function SettingsTab() {
             <>
               <SectionHeader
                 title="Visual Effects"
-                desc="Premium visual enhancements — all enabled by default"
+                desc="CinaVault 3.0 visual enhancements - all enabled by default"
               />
               <ToggleRow
                 label="Motion Animations"
@@ -459,7 +460,7 @@ export default function SettingsTab() {
               <div className="cv-card p-3">
                 <img
                   src="/branding/cinavault-premium-banner.png"
-                  alt="CinaVault Premium Media Server brand"
+                  alt="CinaVault 3.0 Media Server brand"
                   className="w-full rounded-lg border border-white/10"
                 />
               </div>
@@ -469,16 +470,17 @@ export default function SettingsTab() {
                   className="text-xl font-bold mb-1"
                   style={{ color: "var(--cv-text)" }}
                 >
-                  CinaVault Premium
+                  {BUILD_INFO.name}
                 </h2>
                 <p
                   className="text-sm font-medium mb-0.5"
                   style={{ color: "var(--cv-accent)" }}
                 >
-                  Fusion Edition
+                  {BUILD_INFO.edition}
                 </p>
                 <p className="text-xs" style={{ color: "var(--cv-subtext)" }}>
-                  v1.6.6 · Build 166 · Tauri v2 + React 18
+                  {BUILD_INFO.displayName} · {BUILD_INFO.version} · Tauri v2 +
+                  React 18
                 </p>
                 <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                   <div className="p-3 rounded-xl bg-white/3">

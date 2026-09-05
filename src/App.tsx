@@ -38,6 +38,7 @@ import { AI_MEDIA_AGENT_ENABLED } from "./services/aiMediaAgent";
 import { startAiMediaAutopilot } from "./services/aiMediaAutopilot";
 import { getPreferredMediaServer } from "./services/serverProvider";
 import { getEnabledCinaVaultFeatures } from "./features/cinavaultFeatureSuite";
+import { WINDOW_TITLE } from "./buildInfo";
 import {
   ensurePermanentMediaPluginsAtStartup,
   initializePermanentMediaPluginsAtStartup,
@@ -316,7 +317,7 @@ export default function App(): JSX.Element {
         }
 
         const appWindow = getCurrentWindow();
-        await appWindow.setTitle("CinaVault Premium · Build 170");
+        await appWindow.setTitle(WINDOW_TITLE);
       } catch (error) {
         console.error("Initialization error:", error);
         addStatusMessage("Failed to initialize application");

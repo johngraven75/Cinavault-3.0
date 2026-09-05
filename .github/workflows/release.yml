@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Release tag, for example build-169
+        description: Release tag, for example v3-build-1
         required: true
-        default: build-169
+        default: v3-build-1
       prerelease:
         description: Publish as a prerelease
         required: true
@@ -27,7 +27,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: release-build-169
+  group: release-v3-build-1
   cancel-in-progress: false
 
 env:
@@ -39,10 +39,10 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       startsWith(github.ref, 'refs/tags/') ||
-      contains(github.event.head_commit.message, '[release build-169]') ||
+      contains(github.event.head_commit.message, '[release v3-build-1]') ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.number == 46 &&
-       github.event.comment.body == '/release build-169' &&
+       github.event.comment.body == '/release v3-build-1' &&
        github.event.comment.author_association == 'OWNER')
     runs-on: ubuntu-latest
     steps:
@@ -54,7 +54,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: Number(process.env.RELEASE_MONITOR_ISSUE),
-              body: `Build 169 release run started: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nCommit: ${context.sha}`
+              body: `CinaVault 3.0 v3.0 Build 1 release run started: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nCommit: ${context.sha}`
             });
 
   validate:
@@ -117,19 +117,14 @@ jobs:
       - name: Prepare required Windows resources
         shell: pwsh
         run: |
-          choco install wireguard -y --no-progress
-          $wireGuardCandidates = @(
-            'C:\Program Files\WireGuard\wireguard.exe',
-            'C:\Program Files (x86)\WireGuard\wireguard.exe'
-          )
-          $wireGuardSource = $wireGuardCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-          if (-not $wireGuardSource) {
-            $wireGuardSource = Get-ChildItem 'C:\Program Files*' -Filter wireguard.exe -Recurse -ErrorAction SilentlyContinue |
-              Select-Object -First 1 -ExpandProperty FullName
+          npm run prepare:wireguard:windows
+
+          New-Item -ItemType Directory -Force -Path src-tauri/tools/cloudflared | Out-Null
+          Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe' -OutFile src-tauri/tools/cloudflared/cloudflared.exe
+          $cloudflared = Get-Item src-tauri/tools/cloudflared/cloudflared.exe
+          if ($cloudflared.Length -lt 10000000) {
+            throw "Downloaded cloudflared binary is unexpectedly small: $($cloudflared.Length) bytes"
           }
-          if (-not $wireGuardSource) { throw 'A genuine WireGuard executable could not be located after installation.' }
-          New-Item -ItemType Directory -Force -Path src-tauri/tools/wireguard | Out-Null
-          Copy-Item $wireGuardSource src-tauri/tools/wireguard/wireguard.exe -Force
 
           Add-Type -AssemblyName System.Drawing
           Get-ChildItem src-tauri/icons -Filter *.png | ForEach-Object {
@@ -182,7 +177,7 @@ jobs:
       - name: Upload installers
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: cinavault-build-169-windows-installers-${{ github.sha }}
+          name: cinavault-v3-build-1-windows-installers-${{ github.sha }}
           path: release-assets/*
           if-no-files-found: error
           retention-days: 30
@@ -204,7 +199,7 @@ jobs:
             $releaseTag = $env:GITHUB_REF_NAME_VALUE
             $prerelease = 'false'
           } else {
-            $releaseTag = 'build-169'
+            $releaseTag = 'v3-build-1'
             $prerelease = 'false'
           }
 
@@ -223,7 +218,7 @@ jobs:
         with:
           tag_name: ${{ steps.release.outputs.tag }}
           target_commitish: main
-          name: CinaVault Premium Build 169
+          name: CinaVault 3.0 v3.0 Build 1
           prerelease: ${{ steps.release.outputs.prerelease }}
           generate_release_notes: true
           fail_on_unmatched_files: true
@@ -242,7 +237,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: Number(process.env.RELEASE_MONITOR_ISSUE),
-              body: `Build 169 release workflow succeeded.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\nRelease: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/releases/tag/build-169`
+              body: `CinaVault 3.0 v3.0 Build 1 release workflow succeeded.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\nRelease: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/releases/tag/v3-build-1`
             });
 
   report-failure:
@@ -262,5 +257,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: Number(process.env.RELEASE_MONITOR_ISSUE),
-              body: `Build 169 release workflow failed.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\nCommit: ${context.sha}`
+              body: `CinaVault 3.0 v3.0 Build 1 release workflow failed.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\nCommit: ${context.sha}`
             });

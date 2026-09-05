@@ -3,10 +3,10 @@
   "build": "v3.0.0-foundation.3",
   "status": "in_progress",
   "releaseAuthorized": false,
-  "platforms": ["windows", "android", "ios"],
+  "platforms": ["windows", "linux-ubuntu", "android", "ios"],
   "excludedRepositories": ["johngraven75/Cinavault-Reimagined"],
   "phases": {
-    "repositoryAudit": {"status": "verified", "evidence": "Independent private repository created from the documented Premium baseline at a1f1d96."},
+    "repositoryAudit": {"status": "verified", "evidence": "Independent CinaVault 3.0 repository created from the documented baseline at a1f1d96 with separate OS edition repositories."},
     "rootCauseDiagnosis": {"status": "verified", "evidence": "Technical-design review identified the desktop-to-service boundary and unsafe-storage gaps."},
     "implementation": {"status": "in_progress", "evidence": "Loopback service now includes durable registration, bounded inspection, and a transient Windows-aware volume identity probe; scanning and catalogue writes remain disabled."},
     "dependencyConfiguration": {"status": "fixed_and_verified", "evidence": "The Rust toolchain includes a Windows GNU target and the Windows API binding features required by the native identity probe."},
@@ -18,7 +18,7 @@
     "networkApi": {"status": "fixed_and_verified", "evidence": "Loopback health, registration, bounded inspection, transient route probing, and dry-run reconciliation routes are tested; write-capable reconciliation returns HTTP 409."},
     "securityPrivacy": {"status": "fixed_and_verified", "evidence": "The service defaults to loopback, stores no credentials, accepts only registered identifiers for inspection or probing, persists no probe result, and rejects write-capable reconciliation."},
     "performanceReliability": {"status": "in_progress", "evidence": "Inspection is limited to 100 immediate entries and probing performs only a bounded readability check; network-volume reliability requires later implementation."},
-    "crossPlatformParity": {"status": "not_applicable", "evidence": "CinaVault 3.0 is establishing a Windows service foundation; Android and iOS changes are outside this milestone."},
+    "crossPlatformParity": {"status": "in_progress", "evidence": "CinaVault 3.0 now tracks separate Windows, Ubuntu Linux, Android, and iOS edition repositories; platform parity validation remains pending per edition."},
     "packaging": {"status": "in_progress", "evidence": "Desktop MSI and NSIS configuration are retained, while server WiX packaging is a later approved milestone."},
     "installationLaunch": {"status": "not_applicable", "evidence": "No production Windows Service installer is claimed in the foundation milestone; validation requires a Windows runner."},
     "finalRegression": {"status": "in_progress", "evidence": "Alpha.3 service tests and Windows cross-target check pass alongside inherited frontend tests; release authorization remains false pending Windows service and installer validation."}

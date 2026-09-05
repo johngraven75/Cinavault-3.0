@@ -499,8 +499,8 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   // Status
   statusMessages: [
-    "CinaVault Premium initialized",
-    "All systems operational — Premium Edition",
+    "CinaVault 3.0 initialized",
+    "All systems operational - Server Foundation",
   ],
   addStatusMessage: (msg) =>
     set((s) => ({

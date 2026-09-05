@@ -117,7 +117,7 @@ async fn map_upnp(port: u16) -> Result<String, String> {
                 port,
                 local_address,
                 MAPPING_LEASE_SECONDS,
-                "CinaVault Premium Build 170",
+                "CinaVault 3.0 Build 170",
             )
             .map_err(|error| error.to_string())?;
         gateway
