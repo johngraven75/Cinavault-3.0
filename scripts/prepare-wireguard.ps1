@@ -86,10 +86,11 @@ function Assert-OfficialSignature {
     )
 
     $signature = Get-CodeSignature -Path $Path
+    $signerSubject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
     if ($signature.Status -ne 'Valid' -or
         $null -eq $signature.SignerCertificate -or
-        $signature.SignerCertificate.Subject -notmatch '(?i)WireGuard') {
-        throw "$Label does not have a valid WireGuard Authenticode signature. Status: $($signature.Status)"
+        $signerSubject -notmatch '(?i)(WireGuard|Jason A\. Donenfeld)') {
+        throw "$Label does not have a valid WireGuard Authenticode signature. Status: $($signature.Status); signer: $signerSubject"
     }
 }
 
