@@ -159,7 +159,7 @@ function Get-Command {
     return $null
 }
 
-${env:ProgramFiles(x86)} = ''
+\${env:ProgramFiles(x86)} = ''
 
 try {
     Get-CodeSignature -Path 'wireguard.exe' | Out-Null
