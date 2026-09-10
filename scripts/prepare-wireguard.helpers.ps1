@@ -65,14 +65,24 @@ function Get-CodeSignature {
             throw "signtool.exe could not validate the Authenticode signature for $Path. $($output -join [Environment]::NewLine)"
         }
 
-        $issuedTo = ($output | Where-Object { $_ -match '^\s*(Issued to|Subject):\s*(.+)$' } | Select-Object -First 1)
-        $subject = if ($issuedTo -and $issuedTo -match '^\s*(Issued to|Subject):\s*(.+)$') { $Matches[2] } else { $output -join ' ' }
+        $issuedTo = ($output | Where-Object { $_ -match '^\s*Issued to:\s*(.+)$' } | Select-Object -First 1)
+        $subjectLine = ($output | Where-Object { $_ -match '^\s*Subject:\s*(.+)$' } | Select-Object -First 1)
+        $publisherIdentity = if ($issuedTo -and $issuedTo -match '^\s*Issued to:\s*(.+)$') { $Matches[1].Trim() } else { $null }
+        $subject = if ($subjectLine -and $subjectLine -match '^\s*Subject:\s*(.+)$') {
+            $Matches[1].Trim()
+        }
+        else {
+            $publisherIdentity
+        }
+        if ([string]::IsNullOrWhiteSpace($publisherIdentity) -or [string]::IsNullOrWhiteSpace($subject)) {
+            throw "signtool.exe could not determine the signer identity for $Path. $($output -join [Environment]::NewLine)"
+        }
         return [pscustomobject]@{
             Status = 'Valid'
             SignerCertificate = [pscustomobject]@{
                 Subject = $subject
             }
-            PublisherIdentity = $subject
+            PublisherIdentity = $publisherIdentity
         }
     }
 }
