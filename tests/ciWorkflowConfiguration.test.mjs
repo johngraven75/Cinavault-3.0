@@ -1,8 +1,21 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
 const read = (path) => fs.readFileSync(path, "utf8");
+const readWireGuardFunctionBlock = () => {
+  const script = read("scripts/prepare-wireguard.ps1");
+  const start = script.indexOf("function Get-CodeSignature");
+  const end = script.indexOf("$destinationPath =");
+
+  assert.notEqual(start, -1, "WireGuard helper functions should exist");
+  assert.notEqual(end, -1, "WireGuard helper functions should end before runtime execution");
+
+  return script.slice(start, end);
+};
 
 test("Windows validation asserts the authoritative build identity", () => {
   const build = JSON.parse(read("build-version.json"));
@@ -42,7 +55,75 @@ test("WireGuard preparation accepts the official signer identity", () => {
   assert.match(script, /function Test-OfficialWireGuardSignerSubject/);
   assert.match(script, /function Get-SignerSimpleName/);
   assert.match(script, /WireGuard LLC/);
-  assert.match(script, /Jason A\. Donenfeld/);
-  assert.match(script, /RequireOfficialWireGuardSigner/);
   assert.match(script, /Assert-AuthenticodeSignature -Path \$msiPath -Label 'Downloaded WireGuard MSI'/);
+});
+
+test("WireGuard preparation accepts valid MSI signatures but rejects non-official executable publishers", () => {
+  const tempScriptPath = path.join(
+    os.tmpdir(),
+    `ci-wireguard-validation-${process.pid}-${Date.now()}.ps1`,
+  );
+  const helpers = readWireGuardFunctionBlock();
+
+  fs.writeFileSync(
+    tempScriptPath,
+    `${helpers}
+function Get-CodeSignature {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    switch ($Path) {
+        'msi-valid' {
+            return [pscustomobject]@{
+                Status = 'Valid'
+                SignerCertificate = [pscustomobject]@{
+                    Subject = 'CN=AAA Certificate Services, O=AAA Certificate Services'
+                }
+            }
+        }
+        'exe-valid' {
+            return [pscustomobject]@{
+                Status = 'Valid'
+                SignerCertificate = [pscustomobject]@{
+                    Subject = 'CN=WireGuard LLC, O=WireGuard LLC'
+                }
+            }
+        }
+        'exe-invalid' {
+            return [pscustomobject]@{
+                Status = 'Valid'
+                SignerCertificate = [pscustomobject]@{
+                    Subject = 'CN=AAA Certificate Services, O=AAA Certificate Services'
+                }
+            }
+        }
+        default {
+            throw "Unexpected path: $Path"
+        }
+    }
+}
+
+Assert-AuthenticodeSignature -Path 'msi-valid' -Label 'Downloaded WireGuard MSI' | Out-Null
+Assert-AuthenticodeSignature -Path 'exe-valid' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+
+try {
+    Assert-AuthenticodeSignature -Path 'exe-invalid' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+    Write-Output 'unexpected-pass'
+}
+catch {
+    Write-Output $_.Exception.Message
+}
+`,
+    "utf8",
+  );
+
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    });
+
+    assert.doesNotMatch(output, /unexpected-pass/);
+    assert.match(output, /WireGuard executable does not have a valid WireGuard Authenticode signature/);
+  } finally {
+    fs.rmSync(tempScriptPath, { force: true });
+  }
 });
