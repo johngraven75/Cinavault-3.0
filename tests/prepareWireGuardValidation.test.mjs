@@ -13,10 +13,12 @@ const hasPowerShellCore = () => {
 
   return !result.error && result.status === 0;
 };
+const canRunWireGuardWindowsContract =
+  process.platform === "win32" && hasPowerShellCore();
 
 test("WireGuard preparation accepts the official signer identity", (t) => {
-  if (!hasPowerShellCore()) {
-    t.skip("pwsh is not available");
+  if (!canRunWireGuardWindowsContract) {
+    t.skip("WireGuard Windows contract requires win32 and pwsh");
   }
 
   const tempDirectory = fs.mkdtempSync(
@@ -47,8 +49,8 @@ Write-Output "$trustedSubject,$legacySubject,$trustedFallback,$mismatch"
 });
 
 test("WireGuard preparation accepts valid MSI signatures but rejects non-official executable publishers", (t) => {
-  if (!hasPowerShellCore()) {
-    t.skip("pwsh is not available");
+  if (!canRunWireGuardWindowsContract) {
+    t.skip("WireGuard Windows contract requires win32 and pwsh");
   }
 
   const tempDirectory = fs.mkdtempSync(
@@ -131,8 +133,8 @@ catch {
 });
 
 test("WireGuard preparation reports when PowerShell signature tooling is unavailable", (t) => {
-  if (!hasPowerShellCore()) {
-    t.skip("pwsh is not available");
+  if (!canRunWireGuardWindowsContract) {
+    t.skip("WireGuard Windows contract requires win32 and pwsh");
   }
 
   const tempDirectory = fs.mkdtempSync(
