@@ -1,11 +1,18 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
 const read = (path) => fs.readFileSync(path, "utf8");
+const hasPowerShellCore = () => {
+  const result = spawnSync("pwsh", ["-NoProfile", "-Command", "exit 0"], {
+    stdio: "ignore",
+  });
+
+  return !result.error && result.status === 0;
+};
 const readWireGuardFunctionBlock = () => {
   const script = read("scripts/prepare-wireguard.ps1");
   const start = script.indexOf("function Get-CodeSignature");
@@ -58,7 +65,11 @@ test("WireGuard preparation accepts the official signer identity", () => {
   assert.match(script, /Assert-AuthenticodeSignature -Path \$msiPath -Label 'Downloaded WireGuard MSI'/);
 });
 
-test("WireGuard preparation accepts valid MSI signatures but rejects non-official executable publishers", () => {
+test("WireGuard preparation accepts valid MSI signatures but rejects non-official executable publishers", (t) => {
+  if (!hasPowerShellCore()) {
+    t.skip("pwsh is not available");
+  }
+
   const tempScriptPath = path.join(
     os.tmpdir(),
     `ci-wireguard-validation-${process.pid}-${Date.now()}.ps1`,
