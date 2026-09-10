@@ -42,32 +42,24 @@ function Get-CodeSignature {
             throw "Unable to validate the Authenticode signature for $Path because Microsoft.PowerShell.Security and signtool.exe are unavailable. $($_.Exception.Message)"
         }
 
-        $outputPath = Join-Path ([System.IO.Path]::GetTempPath()) "cinavault-signtool-$([guid]::NewGuid().ToString('N')).stdout.log"
-        $errorPath = Join-Path ([System.IO.Path]::GetTempPath()) "cinavault-signtool-$([guid]::NewGuid().ToString('N')).stderr.log"
-        try {
-            $escapedPath = $Path.Replace('"', '""')
-            $process = Start-Process -FilePath $signatureToolPath `
-                -ArgumentList ('verify /pa /v "{0}"' -f $escapedPath) `
-                -NoNewWindow `
-                -Wait `
-                -PassThru `
-                -RedirectStandardOutput $outputPath `
-                -RedirectStandardError $errorPath
-            $output = @()
-            if (Test-Path -LiteralPath $outputPath) {
-                $output += Get-Content -LiteralPath $outputPath
-            }
-            if (Test-Path -LiteralPath $errorPath) {
-                $output += Get-Content -LiteralPath $errorPath
-            }
+        $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+        $startInfo.FileName = $signatureToolPath
+        $startInfo.UseShellExecute = $false
+        $startInfo.RedirectStandardOutput = $true
+        $startInfo.RedirectStandardError = $true
+        foreach ($argument in @('verify', '/pa', '/v', $Path)) {
+            [void]$startInfo.ArgumentList.Add($argument)
         }
-        finally {
-            if (Test-Path -LiteralPath $outputPath) {
-                Remove-Item -LiteralPath $outputPath -Force
-            }
-            if (Test-Path -LiteralPath $errorPath) {
-                Remove-Item -LiteralPath $errorPath -Force
-            }
+        $process = [System.Diagnostics.Process]::Start($startInfo)
+        $stdout = $process.StandardOutput.ReadToEnd()
+        $stderr = $process.StandardError.ReadToEnd()
+        $process.WaitForExit()
+        $output = @()
+        if (-not [string]::IsNullOrWhiteSpace($stdout)) {
+            $output += $stdout -split '\r?\n'
+        }
+        if (-not [string]::IsNullOrWhiteSpace($stderr)) {
+            $output += $stderr -split '\r?\n'
         }
         if ($process.ExitCode -ne 0) {
             throw "signtool.exe could not validate the Authenticode signature for $Path. $($output -join [Environment]::NewLine)"
