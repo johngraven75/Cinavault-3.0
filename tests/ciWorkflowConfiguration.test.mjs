@@ -97,7 +97,6 @@ function Get-CodeSignature {
                 Status = 'Valid'
                 SignerCertificate = [pscustomobject]@{
                     Subject = 'CN=WireGuard LLC, O=WireGuard LLC'
-                    SimpleName = 'WireGuard LLC'
                 }
             }
         }

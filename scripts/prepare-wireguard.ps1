@@ -94,6 +94,23 @@ function Get-SignerSimpleName {
         return $SignerCertificate.SimpleName.Trim()
     }
 
+    if (-not [string]::IsNullOrWhiteSpace($SignerCertificate.Subject)) {
+        try {
+            $distinguishedName = [System.Security.Cryptography.X509Certificates.X500DistinguishedName]::new($SignerCertificate.Subject)
+            $decodedSubject = $distinguishedName.Decode(
+                [System.Security.Cryptography.X509Certificates.X500DistinguishedNameFlags]::UseNewLines
+            )
+            $commonName = $decodedSubject -split '\r?\n' |
+                Where-Object { $_ -match '^\s*CN=' } |
+                Select-Object -First 1
+            if ($commonName -and $commonName -match '^\s*CN=(.+)$') {
+                return $Matches[1].Trim()
+            }
+        }
+        catch {
+        }
+    }
+
     return $SignerCertificate.Subject
 }
 
