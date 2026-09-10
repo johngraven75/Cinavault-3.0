@@ -39,6 +39,8 @@ test("Cargo lockfile is reproducible UTF-8 TOML", () => {
 test("WireGuard preparation accepts the official signer identity", () => {
   const script = read("scripts/prepare-wireguard.ps1");
 
+  assert.match(script, /function Test-OfficialWireGuardSignerSubject/);
   assert.match(script, /Jason A\\\. Donenfeld/);
-  assert.match(script, /signerSubject/);
+  assert.match(script, /RequireOfficialWireGuardSigner/);
+  assert.match(script, /Assert-AuthenticodeSignature -Path \$msiPath -Label 'Downloaded WireGuard MSI'/);
 });

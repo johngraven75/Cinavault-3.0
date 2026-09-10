@@ -61,6 +61,33 @@ function Get-CodeSignature {
     }
 }
 
+function Test-OfficialWireGuardSignerSubject {
+    param([string]$Subject)
+
+    return -not [string]::IsNullOrWhiteSpace($Subject) -and
+        $Subject -match '(?i)(WireGuard|Jason A\. Donenfeld)'
+}
+
+function Assert-AuthenticodeSignature {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Label,
+        [switch]$RequireOfficialWireGuardSigner
+    )
+
+    $signature = Get-CodeSignature -Path $Path
+    $signerSubject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
+    if ($signature.Status -ne 'Valid' -or $null -eq $signature.SignerCertificate) {
+        throw "$Label does not have a valid Authenticode signature. Status: $($signature.Status); signer: $signerSubject"
+    }
+
+    if ($RequireOfficialWireGuardSigner -and -not (Test-OfficialWireGuardSignerSubject -Subject $signerSubject)) {
+        throw "$Label does not have a valid WireGuard Authenticode signature. Status: $($signature.Status); signer: $signerSubject"
+    }
+
+    return $signature
+}
+
 function Test-OfficialWireGuardBinary {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -73,24 +100,12 @@ function Test-OfficialWireGuardBinary {
         return $false
     }
 
-    $signature = Get-CodeSignature -Path $Path
-    return $signature.Status -eq 'Valid' -and
-        $null -ne $signature.SignerCertificate -and
-        $signature.SignerCertificate.Subject -match '(?i)WireGuard'
-}
-
-function Assert-OfficialSignature {
-    param(
-        [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][string]$Label
-    )
-
-    $signature = Get-CodeSignature -Path $Path
-    $signerSubject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
-    if ($signature.Status -ne 'Valid' -or
-        $null -eq $signature.SignerCertificate -or
-        $signerSubject -notmatch '(?i)(WireGuard|Jason A\. Donenfeld)') {
-        throw "$Label does not have a valid WireGuard Authenticode signature. Status: $($signature.Status); signer: $signerSubject"
+    try {
+        $signature = Assert-AuthenticodeSignature -Path $Path -Label 'WireGuard executable' -RequireOfficialWireGuardSigner
+        return Test-OfficialWireGuardSignerSubject -Subject $signature.SignerCertificate.Subject
+    }
+    catch {
+        return $false
     }
 }
 
@@ -128,7 +143,7 @@ try {
 
         Write-Host "Downloading the official WireGuard MSI from $MsiUrl"
         Invoke-WebRequest -Uri $MsiUrl -OutFile $msiPath -UseBasicParsing
-        Assert-OfficialSignature -Path $msiPath -Label 'Downloaded WireGuard MSI'
+        Assert-AuthenticodeSignature -Path $msiPath -Label 'Downloaded WireGuard MSI'
 
         $msiArguments = "/a `"$msiPath`" /qn TARGETDIR=`"$extractionPath`""
         $extract = Start-Process msiexec.exe -ArgumentList $msiArguments -Wait -PassThru
