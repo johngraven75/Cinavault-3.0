@@ -65,6 +65,9 @@ jobs:
       - name: Production frontend build
         run: npm run build
 
+      - name: Validate WireGuard Windows signer contract
+        run: npm run test:wireguard:windows-contract
+
       - name: Prepare genuine Windows Rust and bundle resources
         run: npm run prepare:wireguard:windows
 
