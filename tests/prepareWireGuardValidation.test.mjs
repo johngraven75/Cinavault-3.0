@@ -76,6 +76,79 @@ test("WireGuard signature fallback accepts signtool output without ProcessStartI
   runSigntoolFallbackContract();
 });
 
+test("WireGuard signature fallback passes signtool arguments as a single command line string", (t) => {
+  if (!canRunPowerShellHelperTests) {
+    t.skip("WireGuard PowerShell helper test requires pwsh");
+  }
+
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-signtool-args-"),
+  );
+  const tempScriptPath = path.join(tempDirectory, "signtool-args.ps1");
+  const wireguardPath = path.join(tempDirectory, 'wireguard "quoted".exe');
+  fs.writeFileSync(
+    tempScriptPath,
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
+function Import-Module {
+    throw 'module unavailable'
+}
+
+function Get-Command {
+    param()
+    return [pscustomobject]@{ Source = 'fake-signtool.exe' }
+}
+
+function Start-Process {
+    param(
+        [Parameter(Mandatory = $true)][string]$FilePath,
+        [Parameter(Mandatory = $true)]$ArgumentList,
+        [switch]$NoNewWindow,
+        [switch]$Wait,
+        [switch]$PassThru,
+        [Parameter(Mandatory = $true)][string]$RedirectStandardOutput,
+        [Parameter(Mandatory = $true)][string]$RedirectStandardError
+    )
+
+    if ($ArgumentList -is [System.Array]) {
+        throw 'ArgumentList must be a single string.'
+    }
+    $global:CapturedArgumentList = $ArgumentList
+
+    Set-Content -LiteralPath $RedirectStandardOutput -Value @(
+        'Issued to: WireGuard LLC',
+        'Subject: CN=WireGuard LLC, O=WireGuard LLC'
+    )
+    Set-Content -LiteralPath $RedirectStandardError -Value ''
+
+    $process = [pscustomobject]@{
+        ExitCode = 0
+        ArgumentListType = $ArgumentList.GetType().FullName
+        ArgumentListValue = $ArgumentList
+    }
+    $process | Add-Member -MemberType ScriptMethod -Name Dispose -Value { }
+    return $process
+}
+
+$signature = Get-CodeSignature -Path '${wireguardPath.replace(/'/g, "''")}'
+Write-Output "$($signature.Status)|$($signature.PublisherIdentity)|$($signature.SignerCertificate.Subject)|$global:CapturedArgumentList"
+`,
+    "utf8",
+  );
+
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    }).trim();
+
+    assert.equal(
+      output,
+      `Valid|WireGuard LLC|CN=WireGuard LLC, O=WireGuard LLC|verify /pa /v "${wireguardPath.replace(/"/g, '""')}"`,
+    );
+  } finally {
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
+  }
+});
+
 test("WireGuard signature fallback accepts signtool output on Windows contract runtimes", (t) => {
   if (!canRunWireGuardWindowsContract) {
     t.skip("WireGuard Windows contract requires win32 and pwsh");
