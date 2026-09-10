@@ -52,22 +52,31 @@ test("WireGuard preparation accepts the official signer identity", (t) => {
     t.skip("pwsh is not available");
   }
 
-  const output = execFileSync(
-    "pwsh",
-    [
-      "-NoProfile",
-      "-Command",
-      `. '${wireGuardHelperPath.replace(/'/g, "''")}'; ` +
-        "$trustedSubject = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ Subject = 'CN=WireGuard LLC, O=WireGuard LLC' }); " +
-        "$legacySubject = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ Subject = 'CN=Jason A. Donenfeld' }); " +
-        "$trustedFallback = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'WireGuard LLC' }); " +
-        "$mismatch = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'CN=AAA Certificate Services, O=WireGuard LLC' }); " +
-        'Write-Output \"$trustedSubject,$legacySubject,$trustedFallback,$mismatch\"',
-    ],
-    { encoding: "utf8" },
-  ).trim();
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-signer-identity-"),
+  );
+  const tempScriptPath = path.join(tempDirectory, "signer-identity.ps1");
+  fs.writeFileSync(
+    tempScriptPath,
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
+$trustedSubject = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ Subject = 'CN=WireGuard LLC, O=WireGuard LLC' })
+$legacySubject = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ Subject = 'CN=Jason A. Donenfeld' })
+$trustedFallback = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'WireGuard LLC' })
+$mismatch = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'CN=AAA Certificate Services, O=WireGuard LLC' })
+Write-Output "$trustedSubject,$legacySubject,$trustedFallback,$mismatch"
+`,
+    "utf8",
+  );
 
-  assert.equal(output, "True,True,True,False");
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    }).trim();
+
+    assert.equal(output, "True,True,True,False");
+  } finally {
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
+  }
 });
 
 test("WireGuard preparation accepts valid MSI signatures but rejects non-official executable publishers", (t) => {

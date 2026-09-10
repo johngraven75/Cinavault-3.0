@@ -42,7 +42,7 @@ function Get-CodeSignature {
             throw "Unable to validate the Authenticode signature for $Path because Microsoft.PowerShell.Security and signtool.exe are unavailable. $($_.Exception.Message)"
         }
 
-        $output = & $signatureToolPath verify /pa /v $Path 2>&1
+        $output = & $signatureToolPath verify /pa /v ('"{0}"' -f $Path) 2>&1
         if ($LASTEXITCODE -ne 0) {
             throw "signtool.exe could not validate the Authenticode signature for $Path. $($output -join [Environment]::NewLine)"
         }
