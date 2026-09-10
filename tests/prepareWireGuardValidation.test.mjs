@@ -106,8 +106,11 @@ function Get-CodeSignature {
 }
 
 Assert-AuthenticodeSignature -Path 'msi-valid' -Label 'Downloaded WireGuard MSI' | Out-Null
+Write-Output 'msi-valid-pass'
 Assert-AuthenticodeSignature -Path 'exe-valid-subject' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+Write-Output 'exe-valid-subject-pass'
 Assert-AuthenticodeSignature -Path 'exe-valid-fallback' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+Write-Output 'exe-valid-fallback-pass'
 
 try {
     Assert-AuthenticodeSignature -Path 'exe-subject-mismatch' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
@@ -125,6 +128,9 @@ catch {
       encoding: "utf8",
     });
 
+    assert.match(output, /msi-valid-pass/);
+    assert.match(output, /exe-valid-subject-pass/);
+    assert.match(output, /exe-valid-fallback-pass/);
     assert.doesNotMatch(output, /unexpected-pass/);
     assert.match(output, /WireGuard executable is Authenticode-signed but not by a trusted official WireGuard publisher/);
   } finally {
