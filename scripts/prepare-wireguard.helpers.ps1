@@ -4,13 +4,13 @@ param()
 Set-StrictMode -Version Latest
 
 $script:OfficialWireGuardSignerNames = @(
-    'WireGuard LLC',
-    'Jason A. Donenfeld'
+    'wireguard llc',
+    'jason a. donenfeld'
 )
 
 $script:OfficialWireGuardSignerSubjects = @(
-    'CN=WireGuard LLC, O=WireGuard LLC',
-    'CN=Jason A. Donenfeld'
+    'cn=wireguard llc, o=wireguard llc',
+    'cn=jason a. donenfeld'
 )
 
 function Get-CodeSignature {
@@ -132,7 +132,7 @@ function Test-OfficialWireGuardSignerSubject {
 
     $normalizedSubject = Get-NormalizedSignerSubject -SignerCertificate $signerCertificate
     if (-not [string]::IsNullOrWhiteSpace($normalizedSubject)) {
-        return $script:OfficialWireGuardSignerSubjects -contains $normalizedSubject
+        return $script:OfficialWireGuardSignerSubjects -contains $normalizedSubject.ToLowerInvariant()
     }
 
     $publisherIdentity = if ($SignatureLike -and $SignatureLike.PSObject.Properties.Name -contains 'PublisherIdentity') {
@@ -142,7 +142,8 @@ function Test-OfficialWireGuardSignerSubject {
         Get-SignerPublisherIdentity -SignerCertificate $signerCertificate
     }
 
-    return $script:OfficialWireGuardSignerNames -contains $publisherIdentity
+    return -not [string]::IsNullOrWhiteSpace($publisherIdentity) -and
+        $script:OfficialWireGuardSignerNames -contains $publisherIdentity.ToLowerInvariant()
 }
 
 function Assert-AuthenticodeSignature {
