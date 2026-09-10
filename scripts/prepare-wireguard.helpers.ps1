@@ -42,19 +42,20 @@ function Get-CodeSignature {
             throw "Unable to validate the Authenticode signature for $Path because Microsoft.PowerShell.Security and signtool.exe are unavailable. $($_.Exception.Message)"
         }
 
-        $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
-        $startInfo.FileName = $signatureToolPath
-        $startInfo.UseShellExecute = $false
-        $startInfo.RedirectStandardOutput = $true
-        $startInfo.RedirectStandardError = $true
-        foreach ($argument in @('verify', '/pa', '/v', $Path)) {
-            [void]$startInfo.ArgumentList.Add($argument)
-        }
-        $process = [System.Diagnostics.Process]::Start($startInfo)
+        $stdoutPath = [System.IO.Path]::GetTempFileName()
+        $stderrPath = [System.IO.Path]::GetTempFileName()
+        $process = $null
         try {
-            $stdout = $process.StandardOutput.ReadToEnd()
-            $stderr = $process.StandardError.ReadToEnd()
-            $process.WaitForExit()
+            $process = Start-Process -FilePath $signatureToolPath `
+                -ArgumentList @('verify', '/pa', '/v', $Path) `
+                -NoNewWindow `
+                -Wait `
+                -PassThru `
+                -RedirectStandardOutput $stdoutPath `
+                -RedirectStandardError $stderrPath
+
+            $stdout = Get-Content -LiteralPath $stdoutPath -Raw -ErrorAction SilentlyContinue
+            $stderr = Get-Content -LiteralPath $stderrPath -Raw -ErrorAction SilentlyContinue
             $output = @()
             if (-not [string]::IsNullOrWhiteSpace($stdout)) {
                 $output += $stdout -split '\r?\n'
@@ -67,7 +68,14 @@ function Get-CodeSignature {
             }
         }
         finally {
-            $process.Dispose()
+            if ($process) {
+                $process.Dispose()
+            }
+            foreach ($temporaryPath in @($stdoutPath, $stderrPath)) {
+                if (Test-Path -LiteralPath $temporaryPath) {
+                    Remove-Item -LiteralPath $temporaryPath -Force -ErrorAction SilentlyContinue
+                }
+            }
         }
 
         $issuedTo = ($output | Where-Object { $_ -match '^\s*Issued to:\s*(.+)$' } | Select-Object -First 1)
