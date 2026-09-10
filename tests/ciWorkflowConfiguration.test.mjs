@@ -88,6 +88,7 @@ function Get-CodeSignature {
                 Status = 'Valid'
                 SignerCertificate = [pscustomobject]@{
                     Subject = 'CN=AAA Certificate Services, O=AAA Certificate Services'
+                    SimpleName = 'AAA Certificate Services'
                 }
             }
         }
@@ -96,6 +97,7 @@ function Get-CodeSignature {
                 Status = 'Valid'
                 SignerCertificate = [pscustomobject]@{
                     Subject = 'CN=WireGuard LLC, O=WireGuard LLC'
+                    SimpleName = 'WireGuard LLC'
                 }
             }
         }
@@ -104,6 +106,7 @@ function Get-CodeSignature {
                 Status = 'Valid'
                 SignerCertificate = [pscustomobject]@{
                     Subject = 'CN=AAA Certificate Services, O=AAA Certificate Services'
+                    SimpleName = 'AAA Certificate Services'
                 }
             }
         }

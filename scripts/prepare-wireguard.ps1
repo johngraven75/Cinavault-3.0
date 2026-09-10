@@ -62,24 +62,6 @@ function Get-CodeSignature {
     }
 }
 
-function Get-CertificateSubjectComponent {
-    param(
-        [string]$Subject,
-        [Parameter(Mandatory = $true)][string]$ComponentName
-    )
-
-    if ([string]::IsNullOrWhiteSpace($Subject)) {
-        return $null
-    }
-
-    $match = [regex]::Match($Subject, "(?i)(?:^|,)\s*$([regex]::Escape($ComponentName))\s*=\s*([^,]+)")
-    if ($match.Success) {
-        return $match.Groups[1].Value.Trim()
-    }
-
-    return $null
-}
-
 function Get-SignerSimpleName {
     param($SignerCertificate)
 
@@ -106,11 +88,6 @@ function Get-SignerSimpleName {
         return $SignerCertificate.SimpleName.Trim()
     }
 
-    $commonName = Get-CertificateSubjectComponent -Subject $SignerCertificate.Subject -ComponentName 'CN'
-    if (-not [string]::IsNullOrWhiteSpace($commonName)) {
-        return $commonName
-    }
-
     return $SignerCertificate.Subject
 }
 
@@ -118,11 +95,8 @@ function Test-OfficialWireGuardSignerSubject {
     param($SignerCertificate)
 
     $simpleName = Get-SignerSimpleName -SignerCertificate $SignerCertificate
-    $subject = if ($SignerCertificate) { $SignerCertificate.Subject } else { $null }
-    $organization = Get-CertificateSubjectComponent -Subject $subject -ComponentName 'O'
 
-    return @('WireGuard', 'WireGuard LLC', 'Jason A. Donenfeld') -contains $simpleName -or
-        @('WireGuard', 'WireGuard LLC') -contains $organization
+    return @('WireGuard', 'WireGuard LLC', 'Jason A. Donenfeld') -contains $simpleName
 }
 
 function Assert-AuthenticodeSignature {
