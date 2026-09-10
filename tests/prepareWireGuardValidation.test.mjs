@@ -175,7 +175,9 @@ catch {
       encoding: "utf8",
       env: {
         ...process.env,
+        ProgramFiles: "",
         "ProgramFiles(x86)": "",
+        WindowsSdkDir: "",
       },
     });
 
