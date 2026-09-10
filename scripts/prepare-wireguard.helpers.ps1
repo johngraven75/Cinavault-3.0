@@ -9,6 +9,11 @@ $script:OfficialWireGuardSignerNames = @(
     'Jason A. Donenfeld'
 )
 
+$script:OfficialWireGuardSignerSubjects = @(
+    'CN=WireGuard LLC, O=WireGuard LLC',
+    'CN=Jason A. Donenfeld'
+)
+
 function Get-CodeSignature {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -96,8 +101,28 @@ function Get-SignerSimpleName {
     return $SignerCertificate.Subject
 }
 
+function Get-NormalizedSignerSubject {
+    param($SignerCertificate)
+
+    if ($null -eq $SignerCertificate -or [string]::IsNullOrWhiteSpace($SignerCertificate.Subject)) {
+        return $null
+    }
+
+    try {
+        return ([System.Security.Cryptography.X509Certificates.X500DistinguishedName]::new($SignerCertificate.Subject)).Name
+    }
+    catch {
+        return $null
+    }
+}
+
 function Test-OfficialWireGuardSignerSubject {
     param($SignerCertificate)
+
+    $normalizedSubject = Get-NormalizedSignerSubject -SignerCertificate $SignerCertificate
+    if (-not [string]::IsNullOrWhiteSpace($normalizedSubject)) {
+        return $script:OfficialWireGuardSignerSubjects -contains $normalizedSubject
+    }
 
     $simpleName = Get-SignerSimpleName -SignerCertificate $SignerCertificate
 

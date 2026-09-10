@@ -58,15 +58,16 @@ test("WireGuard preparation accepts the official signer identity", (t) => {
       "-NoProfile",
       "-Command",
       `. '${wireGuardHelperPath.replace(/'/g, "''")}'; ` +
-        "$trusted = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'CN=WireGuard LLC, O=WireGuard LLC' }); " +
-        "$legacy = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'Jason A. Donenfeld'; Subject = 'CN=Jason A. Donenfeld' }); " +
-        "$untrusted = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'AAA Certificate Services'; Subject = 'CN=AAA Certificate Services, O=AAA Certificate Services' }); " +
-        'Write-Output \"$trusted,$legacy,$untrusted\"',
+        "$trustedSubject = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ Subject = 'CN=WireGuard LLC, O=WireGuard LLC' }); " +
+        "$legacySubject = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ Subject = 'CN=Jason A. Donenfeld' }); " +
+        "$trustedFallback = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'WireGuard LLC' }); " +
+        "$mismatch = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'CN=AAA Certificate Services, O=WireGuard LLC' }); " +
+        'Write-Output \"$trustedSubject,$legacySubject,$trustedFallback,$mismatch\"',
     ],
     { encoding: "utf8" },
   ).trim();
 
-  assert.equal(output, "True,True,False");
+  assert.equal(output, "True,True,True,False");
 });
 
 test("WireGuard preparation accepts valid MSI signatures but rejects non-official executable publishers", (t) => {
@@ -94,7 +95,7 @@ function Get-CodeSignature {
                 }
             }
         }
-        'exe-valid' {
+        'exe-valid-subject' {
             return [pscustomobject]@{
                 Status = 'Valid'
                 SignerCertificate = [pscustomobject]@{
@@ -102,12 +103,21 @@ function Get-CodeSignature {
                 }
             }
         }
-        'exe-invalid' {
+        'exe-valid-fallback' {
             return [pscustomobject]@{
                 Status = 'Valid'
                 SignerCertificate = [pscustomobject]@{
-                    Subject = 'CN=AAA Certificate Services, O=AAA Certificate Services'
-                    SimpleName = 'AAA Certificate Services'
+                    Subject = 'WireGuard LLC'
+                    SimpleName = 'WireGuard LLC'
+                }
+            }
+        }
+        'exe-subject-mismatch' {
+            return [pscustomobject]@{
+                Status = 'Valid'
+                SignerCertificate = [pscustomobject]@{
+                    Subject = 'CN=AAA Certificate Services, O=WireGuard LLC'
+                    SimpleName = 'WireGuard LLC'
                 }
             }
         }
@@ -118,10 +128,11 @@ function Get-CodeSignature {
 }
 
 Assert-AuthenticodeSignature -Path 'msi-valid' -Label 'Downloaded WireGuard MSI' | Out-Null
-Assert-AuthenticodeSignature -Path 'exe-valid' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+Assert-AuthenticodeSignature -Path 'exe-valid-subject' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+Assert-AuthenticodeSignature -Path 'exe-valid-fallback' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
 
 try {
-    Assert-AuthenticodeSignature -Path 'exe-invalid' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+    Assert-AuthenticodeSignature -Path 'exe-subject-mismatch' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
     Write-Output 'unexpected-pass'
 }
 catch {
