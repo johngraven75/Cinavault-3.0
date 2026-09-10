@@ -153,3 +153,47 @@ catch {
     fs.rmSync(tempDirectory, { force: true, recursive: true });
   }
 });
+
+test("WireGuard preparation reports when PowerShell signature tooling is unavailable", (t) => {
+  if (!hasPowerShellCore()) {
+    t.skip("pwsh is not available");
+  }
+
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-missing-signature-tooling-"),
+  );
+  const tempScriptPath = path.join(tempDirectory, "missing-signature-tooling.ps1");
+  fs.writeFileSync(
+    tempScriptPath,
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
+function Import-Module {
+    throw 'module unavailable'
+}
+
+function Get-Command {
+    param()
+    return $null
+}
+
+try {
+    Get-CodeSignature -Path 'wireguard.exe' | Out-Null
+    Write-Output 'unexpected-pass'
+}
+catch {
+    Write-Output $_.Exception.Message
+}
+`,
+    "utf8",
+  );
+
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    });
+
+    assert.doesNotMatch(output, /unexpected-pass/);
+    assert.match(output, /Microsoft\.PowerShell\.Security and signtool\.exe are unavailable/);
+  } finally {
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
+  }
+});
