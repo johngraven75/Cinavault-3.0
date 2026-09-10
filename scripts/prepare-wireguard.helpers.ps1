@@ -167,8 +167,11 @@ function Test-OfficialWireGuardSignerSubject {
     else {
         Get-SignerPublisherIdentity -SignerCertificate $signerCertificate
     }
+    $rawSubject = if ($signerCertificate) { $signerCertificate.Subject } else { $null }
 
     return -not [string]::IsNullOrWhiteSpace($publisherIdentity) -and
+        -not [string]::IsNullOrWhiteSpace($rawSubject) -and
+        $rawSubject.Trim().ToLowerInvariant() -eq $publisherIdentity.ToLowerInvariant() -and
         $script:OfficialWireGuardSignerNames -contains $publisherIdentity.ToLowerInvariant()
 }
 
