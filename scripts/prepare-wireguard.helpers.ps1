@@ -4,7 +4,6 @@ param()
 Set-StrictMode -Version Latest
 
 $script:OfficialWireGuardSignerNames = @(
-    'WireGuard',
     'WireGuard LLC',
     'Jason A. Donenfeld'
 )
