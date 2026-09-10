@@ -136,7 +136,7 @@ function Assert-AuthenticodeSignature {
     }
 
     if ($RequireOfficialWireGuardSigner -and -not (Test-OfficialWireGuardSignerSubject -SignerCertificate $signature.SignerCertificate)) {
-        throw "$Label does not have a valid WireGuard Authenticode signature. Status: $($signature.Status); signer: $signerSubject"
+        throw "$Label is Authenticode-signed but not by a trusted official WireGuard publisher. Status: $($signature.Status); signer: $signerSubject"
     }
 
     return $signature

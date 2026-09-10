@@ -135,7 +135,7 @@ catch {
     });
 
     assert.doesNotMatch(output, /unexpected-pass/);
-    assert.match(output, /WireGuard executable does not have a valid WireGuard Authenticode signature/);
+    assert.match(output, /WireGuard executable is Authenticode-signed but not by a trusted official WireGuard publisher/);
   } finally {
     fs.rmSync(tempDirectory, { force: true, recursive: true });
   }
