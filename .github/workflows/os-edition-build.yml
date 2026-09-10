@@ -44,6 +44,9 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Validate WireGuard Windows signer contract
+        run: npm run test:wireguard:windows-contract
+
       - name: Prepare Windows resources
         shell: pwsh
         run: |

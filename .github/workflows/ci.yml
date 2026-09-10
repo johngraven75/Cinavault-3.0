@@ -87,7 +87,6 @@ jobs:
             tests/v2Build102UiStability.test.mjs \
             tests/v2Build103CommandPaletteStability.test.mjs \
             tests/platformParityContract.test.mjs \
-            tests/prepareWireGuardValidation.test.mjs \
             2>&1 | tee tests.log
 
       - name: Production frontend build
