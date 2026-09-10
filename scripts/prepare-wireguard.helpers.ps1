@@ -45,8 +45,9 @@ function Get-CodeSignature {
         $outputPath = Join-Path ([System.IO.Path]::GetTempPath()) "cinavault-signtool-$([guid]::NewGuid().ToString('N')).stdout.log"
         $errorPath = Join-Path ([System.IO.Path]::GetTempPath()) "cinavault-signtool-$([guid]::NewGuid().ToString('N')).stderr.log"
         try {
+            $escapedPath = $Path.Replace('"', '""')
             $process = Start-Process -FilePath $signatureToolPath `
-                -ArgumentList @('verify', '/pa', '/v', $Path) `
+                -ArgumentList ('verify /pa /v "{0}"' -f $escapedPath) `
                 -NoNewWindow `
                 -Wait `
                 -PassThru `
