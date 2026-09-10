@@ -21,6 +21,12 @@ if ([string]::IsNullOrWhiteSpace($Destination)) {
     $Destination = Join-Path $scriptDirectory '..\src-tauri\tools\wireguard\wireguard.exe'
 }
 
+$officialWireGuardSignerNames = @(
+    'WireGuard',
+    'WireGuard LLC',
+    'Jason A. Donenfeld'
+)
+
 function Get-CodeSignature {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -96,7 +102,7 @@ function Test-OfficialWireGuardSignerSubject {
 
     $simpleName = Get-SignerSimpleName -SignerCertificate $SignerCertificate
 
-    return @('WireGuard', 'WireGuard LLC', 'Jason A. Donenfeld') -contains $simpleName
+    return $officialWireGuardSignerNames -contains $simpleName
 }
 
 function Assert-AuthenticodeSignature {

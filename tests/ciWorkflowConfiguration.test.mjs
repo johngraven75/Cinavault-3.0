@@ -15,7 +15,7 @@ const hasPowerShellCore = () => {
 };
 const readWireGuardFunctionBlock = () => {
   const script = read("scripts/prepare-wireguard.ps1");
-  const start = script.indexOf("function Get-CodeSignature");
+  const start = script.indexOf("$officialWireGuardSignerNames =");
   const end = script.indexOf("$destinationPath =");
 
   assert.notEqual(start, -1, "WireGuard helper functions should exist");
