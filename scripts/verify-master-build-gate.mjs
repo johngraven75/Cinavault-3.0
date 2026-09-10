@@ -96,7 +96,7 @@ const record = readJson(recordPath);
 assert.equal(record.schemaVersion, 1, "Unsupported master gate schema version");
 assert(typeof record.build === "string" && record.build.trim(), "Build identity is required");
 assert(Array.isArray(record.platforms), "Platform list is required");
-for (const platform of ["windows", "android", "ios"]) {
+for (const platform of ["windows", "linux-ubuntu", "android", "ios"]) {
   assert(record.platforms.includes(platform), `Platform parity scope is missing ${platform}`);
 }
 

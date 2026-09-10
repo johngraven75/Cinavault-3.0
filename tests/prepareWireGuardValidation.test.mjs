@@ -1,0 +1,326 @@
+import assert from "node:assert/strict";
+import { execFileSync, spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import test from "node:test";
+
+const wireGuardHelperPath = path.resolve("scripts/prepare-wireguard.helpers.ps1");
+const hasPowerShellCore = () => {
+  const result = spawnSync("pwsh", ["-NoProfile", "-Command", "exit 0"], {
+    stdio: "ignore",
+  });
+
+  return !result.error && result.status === 0;
+};
+const canRunPowerShellHelperTests = hasPowerShellCore();
+const canRunWireGuardWindowsContract =
+  process.platform === "win32" && canRunPowerShellHelperTests;
+
+const runSigntoolFallbackContract = () => {
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-signtool-fallback-"),
+  );
+  const fakeSignToolPath = path.join(
+    tempDirectory,
+    process.platform === "win32" ? "signtool.cmd" : "signtool",
+  );
+  const tempScriptPath = path.join(tempDirectory, "signtool-fallback.ps1");
+  fs.writeFileSync(
+    fakeSignToolPath,
+    process.platform === "win32"
+      ? "@echo off\r\necho Issued to: WireGuard LLC\r\necho Subject: CN=WireGuard LLC, O=WireGuard LLC\r\n"
+      : "#!/usr/bin/env bash\nprintf 'Issued to: WireGuard LLC\\nSubject: CN=WireGuard LLC, O=WireGuard LLC\\n'\n",
+    { encoding: "utf8", mode: 0o755 },
+  );
+  fs.writeFileSync(
+    tempScriptPath,
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
+function Import-Module {
+    throw 'module unavailable'
+}
+
+function Get-Command {
+    param()
+    return [pscustomobject]@{ Source = '${fakeSignToolPath.replace(/'/g, "''")}' }
+}
+
+$signature = Get-CodeSignature -Path '${path.join(tempDirectory, "wireguard with spaces.exe").replace(/'/g, "''")}'
+Write-Output "$($signature.Status)|$($signature.PublisherIdentity)|$($signature.SignerCertificate.Subject)"
+`,
+    "utf8",
+  );
+
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    }).trim();
+
+    assert.equal(
+      output,
+      "Valid|WireGuard LLC|CN=WireGuard LLC, O=WireGuard LLC",
+    );
+  } finally {
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
+  }
+};
+
+test("WireGuard signature fallback accepts signtool output without ProcessStartInfo.ArgumentList", (t) => {
+  if (!canRunPowerShellHelperTests) {
+    t.skip("WireGuard PowerShell helper test requires pwsh");
+  }
+  if (process.platform === "win32") {
+    t.skip("Windows-specific signtool fallback is covered by the Win32 contract");
+  }
+
+  runSigntoolFallbackContract();
+});
+
+test("WireGuard signature fallback passes signtool arguments as a single command line string", (t) => {
+  if (!canRunPowerShellHelperTests) {
+    t.skip("WireGuard PowerShell helper test requires pwsh");
+  }
+
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-signtool-args-"),
+  );
+  const tempScriptPath = path.join(tempDirectory, "signtool-args.ps1");
+  const wireguardPath = path.join(tempDirectory, 'wireguard "quoted".exe');
+  fs.writeFileSync(
+    tempScriptPath,
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
+function Import-Module {
+    throw 'module unavailable'
+}
+
+function Get-Command {
+    param()
+    return [pscustomobject]@{ Source = 'fake-signtool.exe' }
+}
+
+function Start-Process {
+    param(
+        [Parameter(Mandatory = $true)][string]$FilePath,
+        [Parameter(Mandatory = $true)]$ArgumentList,
+        [switch]$NoNewWindow,
+        [switch]$Wait,
+        [switch]$PassThru,
+        [Parameter(Mandatory = $true)][string]$RedirectStandardOutput,
+        [Parameter(Mandatory = $true)][string]$RedirectStandardError
+    )
+
+    if ($ArgumentList -is [System.Array]) {
+        throw 'ArgumentList must be a single string.'
+    }
+    $global:CapturedArgumentList = $ArgumentList
+
+    Set-Content -LiteralPath $RedirectStandardOutput -Value @(
+        'Issued to: WireGuard LLC',
+        'Subject: CN=WireGuard LLC, O=WireGuard LLC'
+    )
+    Set-Content -LiteralPath $RedirectStandardError -Value ''
+
+    $process = [pscustomobject]@{
+        ExitCode = 0
+        ArgumentListType = $ArgumentList.GetType().FullName
+        ArgumentListValue = $ArgumentList
+    }
+    $process | Add-Member -MemberType ScriptMethod -Name Dispose -Value { }
+    return $process
+}
+
+$signature = Get-CodeSignature -Path '${wireguardPath.replace(/'/g, "''")}'
+Write-Output "$($signature.Status)|$($signature.PublisherIdentity)|$($signature.SignerCertificate.Subject)|$global:CapturedArgumentList"
+`,
+    "utf8",
+  );
+
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    }).trim();
+
+    assert.equal(
+      output,
+      `Valid|WireGuard LLC|CN=WireGuard LLC, O=WireGuard LLC|verify /pa /v "${wireguardPath.replace(/"/g, '""')}"`,
+    );
+  } finally {
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
+  }
+});
+
+test("WireGuard signature fallback accepts signtool output on Windows contract runtimes", (t) => {
+  if (!canRunWireGuardWindowsContract) {
+    t.skip("WireGuard Windows contract requires win32 and pwsh");
+  }
+
+  runSigntoolFallbackContract();
+});
+
+test("WireGuard preparation accepts the official signer identity", (t) => {
+  if (!canRunWireGuardWindowsContract) {
+    t.skip("WireGuard Windows contract requires win32 and pwsh");
+  }
+
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-signer-identity-"),
+  );
+  const tempScriptPath = path.join(tempDirectory, "signer-identity.ps1");
+  fs.writeFileSync(
+    tempScriptPath,
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
+$trustedSubject = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ Subject = 'CN=WireGuard LLC, O=WireGuard LLC' })
+$legacySubject = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ Subject = 'CN=Jason A. Donenfeld' })
+$trustedFallback = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'WireGuard LLC' })
+$mismatch = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'CN=AAA Certificate Services, O=WireGuard LLC' })
+Write-Output "$trustedSubject,$legacySubject,$trustedFallback,$mismatch"
+`,
+    "utf8",
+  );
+
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    }).trim();
+
+    assert.equal(output, "True,True,True,False");
+  } finally {
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
+  }
+});
+
+test("WireGuard preparation accepts valid MSI signatures but rejects non-official executable publishers", (t) => {
+  if (!canRunWireGuardWindowsContract) {
+    t.skip("WireGuard Windows contract requires win32 and pwsh");
+  }
+
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-validation-"),
+  );
+  const tempScriptPath = path.join(tempDirectory, "validate-wireguard.ps1");
+  fs.writeFileSync(
+    tempScriptPath,
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
+function Get-CodeSignature {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    switch ($Path) {
+        'msi-valid' {
+            return [pscustomobject]@{
+                Status = 'Valid'
+                SignerCertificate = [pscustomobject]@{
+                    Subject = 'CN=AAA Certificate Services, O=AAA Certificate Services'
+                }
+                PublisherIdentity = 'AAA Certificate Services'
+            }
+        }
+        'exe-valid-subject' {
+            return [pscustomobject]@{
+                Status = 'Valid'
+                SignerCertificate = [pscustomobject]@{
+                    Subject = 'CN=WireGuard LLC, O=WireGuard LLC'
+                }
+            }
+        }
+        'exe-valid-fallback' {
+            return [pscustomobject]@{
+                Status = 'Valid'
+                SignerCertificate = [pscustomobject]@{
+                    Subject = 'WireGuard LLC'
+                }
+                PublisherIdentity = 'WireGuard LLC'
+            }
+        }
+        'exe-subject-mismatch' {
+            return [pscustomobject]@{
+                Status = 'Valid'
+                SignerCertificate = [pscustomobject]@{
+                    Subject = 'CN=AAA Certificate Services, O=WireGuard LLC'
+                }
+                PublisherIdentity = 'WireGuard LLC'
+            }
+        }
+        default {
+            throw "Unexpected path: $Path"
+        }
+    }
+}
+
+Assert-AuthenticodeSignature -Path 'msi-valid' -Label 'Downloaded WireGuard MSI' | Out-Null
+Write-Output 'msi-valid-pass'
+Assert-AuthenticodeSignature -Path 'exe-valid-subject' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+Write-Output 'exe-valid-subject-pass'
+Assert-AuthenticodeSignature -Path 'exe-valid-fallback' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+Write-Output 'exe-valid-fallback-pass'
+
+try {
+    Assert-AuthenticodeSignature -Path 'exe-subject-mismatch' -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+    Write-Output 'unexpected-pass'
+}
+catch {
+    Write-Output $_.Exception.Message
+}
+`,
+    "utf8",
+  );
+
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    });
+
+    assert.match(output, /msi-valid-pass/);
+    assert.match(output, /exe-valid-subject-pass/);
+    assert.match(output, /exe-valid-fallback-pass/);
+    assert.doesNotMatch(output, /unexpected-pass/);
+    assert.match(output, /WireGuard executable is Authenticode-signed but not by a trusted official WireGuard publisher/);
+  } finally {
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
+  }
+});
+
+test("WireGuard preparation reports when PowerShell signature tooling is unavailable", (t) => {
+  if (!canRunWireGuardWindowsContract) {
+    t.skip("WireGuard Windows contract requires win32 and pwsh");
+  }
+
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-missing-signature-tooling-"),
+  );
+  const tempScriptPath = path.join(tempDirectory, "missing-signature-tooling.ps1");
+  fs.writeFileSync(
+    tempScriptPath,
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
+function Import-Module {
+    throw 'module unavailable'
+}
+
+function Get-Command {
+    param()
+    return $null
+}
+
+\${env:ProgramFiles(x86)} = ''
+
+try {
+    Get-CodeSignature -Path 'wireguard.exe' | Out-Null
+    Write-Output 'unexpected-pass'
+}
+catch {
+    Write-Output $_.Exception.Message
+}
+`,
+    "utf8",
+  );
+
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    });
+
+    assert.doesNotMatch(output, /unexpected-pass/);
+    assert.match(output, /Microsoft\.PowerShell\.Security and signtool\.exe are unavailable/);
+  } finally {
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
+  }
+});

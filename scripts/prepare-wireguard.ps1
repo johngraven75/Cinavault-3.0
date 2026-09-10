@@ -12,45 +12,15 @@ if ([System.Environment]::OSVersion.Platform -ne [System.PlatformID]::Win32NT) {
     throw 'The bundled WireGuard engine can only be prepared on Windows.'
 }
 
+$scriptPath = $MyInvocation.MyCommand.Path
+if ([string]::IsNullOrWhiteSpace($scriptPath)) {
+    throw 'Unable to resolve the WireGuard preparation script directory.'
+}
+$scriptDirectory = Split-Path -Parent $scriptPath
+. (Join-Path $scriptDirectory 'prepare-wireguard.helpers.ps1')
+
 if ([string]::IsNullOrWhiteSpace($Destination)) {
-    $scriptPath = $MyInvocation.MyCommand.Path
-    if ([string]::IsNullOrWhiteSpace($scriptPath)) {
-        throw 'Unable to resolve the WireGuard preparation script directory.'
-    }
-    $scriptDirectory = Split-Path -Parent $scriptPath
     $Destination = Join-Path $scriptDirectory '..\src-tauri\tools\wireguard\wireguard.exe'
-}
-
-function Test-OfficialWireGuardBinary {
-    param([Parameter(Mandatory = $true)][string]$Path)
-
-    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
-        return $false
-    }
-
-    $item = Get-Item -LiteralPath $Path
-    if ($item.Length -lt 1MB -or $item.VersionInfo.ProductName -notmatch '(?i)WireGuard') {
-        return $false
-    }
-
-    $signature = Get-AuthenticodeSignature -LiteralPath $Path
-    return $signature.Status -eq 'Valid' -and
-        $null -ne $signature.SignerCertificate -and
-        $signature.SignerCertificate.Subject -match '(?i)WireGuard'
-}
-
-function Assert-OfficialSignature {
-    param(
-        [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][string]$Label
-    )
-
-    $signature = Get-AuthenticodeSignature -LiteralPath $Path
-    if ($signature.Status -ne 'Valid' -or
-        $null -eq $signature.SignerCertificate -or
-        $signature.SignerCertificate.Subject -notmatch '(?i)WireGuard') {
-        throw "$Label does not have a valid WireGuard Authenticode signature. Status: $($signature.Status)"
-    }
 }
 
 $destinationPath = [System.IO.Path]::GetFullPath($Destination)
@@ -87,7 +57,7 @@ try {
 
         Write-Host "Downloading the official WireGuard MSI from $MsiUrl"
         Invoke-WebRequest -Uri $MsiUrl -OutFile $msiPath -UseBasicParsing
-        Assert-OfficialSignature -Path $msiPath -Label 'Downloaded WireGuard MSI'
+        Assert-AuthenticodeSignature -Path $msiPath -Label 'Downloaded WireGuard MSI'
 
         $msiArguments = "/a `"$msiPath`" /qn TARGETDIR=`"$extractionPath`""
         $extract = Start-Process msiexec.exe -ArgumentList $msiArguments -Wait -PassThru

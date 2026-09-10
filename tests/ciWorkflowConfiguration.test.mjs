@@ -35,3 +35,11 @@ test("Cargo lockfile is reproducible UTF-8 TOML", () => {
   assert.match(lockfile, /^version = 4$/m);
   assert.match(lockfile, /^\[\[package\]\]$/m);
 });
+
+test("WireGuard preparation accepts the official signer identity", (t) => {
+  const helper = read("scripts/prepare-wireguard.helpers.ps1");
+
+  assert.match(helper, /OfficialWireGuardSignerSubjects/);
+  assert.match(helper, /OfficialWireGuardSignerNames/);
+  assert.match(helper, /PublisherIdentity/);
+});

@@ -1,6 +1,6 @@
 # CinaVault Master Build Completion Gate
 
-This gate applies to every build, repair, feature change, platform migration, package, and release in CinaVault Premium, CinaVault Android, and CinaVault iOS. A change is not complete merely because it compiles.
+This gate applies to every build, repair, feature change, platform migration, package, and release in CinaVault 3.0 for Windows, Ubuntu Linux, Android, and iOS. A change is not complete merely because it compiles.
 
 ## Required workflow
 
@@ -51,7 +51,7 @@ A release workflow must run the master gate in release mode. Release mode fails 
 
 ## Cross-platform rule
 
-Windows Premium is the functional and visual reference unless a platform-specific implementation is required. Android and iOS must receive the same user-facing function, option, design intent, security behavior, defect repair, and regression protection.
+The Windows edition is the functional and visual reference unless a platform-specific implementation is required. Ubuntu Linux, Android, and iOS must receive the same user-facing function, option, design intent, security behavior, defect repair, and regression protection.
 
 ## Persistent-state rule
 

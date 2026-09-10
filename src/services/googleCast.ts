@@ -30,7 +30,7 @@ export async function castToGoogleDevice(
             metadata: {
               type: 0,
               metadataType: 0,
-              title: media.title || "CinaVault Premium",
+              title: media.title || "CinaVault 3.0",
               images: media.posterUrl ? [{ url: media.posterUrl }] : [],
             },
           },

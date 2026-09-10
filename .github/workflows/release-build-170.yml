@@ -1,4 +1,4 @@
-name: CinaVault Master-Gated Windows Release
+name: CinaVault 3.0 Master-Gated Windows Release
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: cinavault-master-gated-release
+  group: cinavault-3-master-gated-release
   cancel-in-progress: false
 
 env:
@@ -132,19 +132,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          choco install wireguard -y --no-progress
-          $wireGuardCandidates = @(
-            'C:\Program Files\WireGuard\wireguard.exe',
-            'C:\Program Files (x86)\WireGuard\wireguard.exe'
-          )
-          $wireGuardSource = $wireGuardCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-          if (-not $wireGuardSource) {
-            $wireGuardSource = Get-ChildItem 'C:\Program Files*' -Filter wireguard.exe -Recurse -ErrorAction SilentlyContinue |
-              Select-Object -First 1 -ExpandProperty FullName
-          }
-          if (-not $wireGuardSource) { throw 'A genuine WireGuard executable could not be located.' }
-          New-Item -ItemType Directory -Force -Path src-tauri/tools/wireguard | Out-Null
-          Copy-Item $wireGuardSource src-tauri/tools/wireguard/wireguard.exe -Force
+          npm run prepare:wireguard:windows
 
           New-Item -ItemType Directory -Force -Path src-tauri/tools/cloudflared | Out-Null
           Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe' -OutFile src-tauri/tools/cloudflared/cloudflared.exe
@@ -269,19 +257,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          choco install wireguard -y --no-progress
-          $wireGuardCandidates = @(
-            'C:\Program Files\WireGuard\wireguard.exe',
-            'C:\Program Files (x86)\WireGuard\wireguard.exe'
-          )
-          $wireGuardSource = $wireGuardCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-          if (-not $wireGuardSource) {
-            $wireGuardSource = Get-ChildItem 'C:\Program Files*' -Filter wireguard.exe -Recurse -ErrorAction SilentlyContinue |
-              Select-Object -First 1 -ExpandProperty FullName
-          }
-          if (-not $wireGuardSource) { throw 'A genuine WireGuard executable could not be located.' }
-          New-Item -ItemType Directory -Force -Path src-tauri/tools/wireguard | Out-Null
-          Copy-Item $wireGuardSource src-tauri/tools/wireguard/wireguard.exe -Force
+          npm run prepare:wireguard:windows
 
           New-Item -ItemType Directory -Force -Path src-tauri/tools/cloudflared | Out-Null
           Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe' -OutFile src-tauri/tools/cloudflared/cloudflared.exe
@@ -332,8 +308,8 @@ jobs:
           if (-not $msiSource) { throw 'The MSI installer was not produced.' }
           if (-not $nsisSource) { throw 'The NSIS installer was not produced.' }
 
-          $msiPath = "release-assets/CinaVault-Premium-$env:ARTIFACT_SLUG-x64.msi"
-          $nsisPath = "release-assets/CinaVault-Premium-$env:ARTIFACT_SLUG-x64-setup.exe"
+          $msiPath = "release-assets/CinaVault-3.0-$env:ARTIFACT_SLUG-x64.msi"
+          $nsisPath = "release-assets/CinaVault-3.0-$env:ARTIFACT_SLUG-x64-setup.exe"
           Copy-Item $msiSource.FullName $msiPath
           Copy-Item $nsisSource.FullName $nsisPath
 
@@ -345,7 +321,7 @@ jobs:
           $msiHash = (Get-FileHash $msi.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
           $nsisHash = (Get-FileHash $nsis.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
           @(
-            "# CinaVault Premium $env:DISPLAY_NAME",
+            "# CinaVault 3.0 $env:DISPLAY_NAME",
             '',
             "Semantic version: $env:SEMANTIC_VERSION",
             '',
@@ -368,7 +344,7 @@ jobs:
           ARTIFACT_SLUG: ${{ needs.authorize.outputs.artifact_slug }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $msi = (Resolve-Path "release-assets/CinaVault-Premium-$env:ARTIFACT_SLUG-x64.msi").Path
+          $msi = (Resolve-Path "release-assets/CinaVault-3.0-$env:ARTIFACT_SLUG-x64.msi").Path
           $install = Start-Process msiexec.exe -ArgumentList @('/i', "`"$msi`"", '/qn', '/norestart') -Wait -PassThru
           if ($install.ExitCode -notin @(0, 3010)) { throw "MSI installation failed with exit code $($install.ExitCode)" }
 
@@ -379,7 +355,7 @@ jobs:
           )
           $installed = $uninstallRoots |
             ForEach-Object { Get-ItemProperty $_ -ErrorAction SilentlyContinue } |
-            Where-Object { $_.DisplayName -like 'CinaVault Premium*' } |
+            Where-Object { $_.DisplayName -like 'CinaVault 3.0*' } |
             Select-Object -First 1
 
           $displayIconPath = $null
@@ -390,14 +366,14 @@ jobs:
           $roots = @()
           if ($installed -and $installed.InstallLocation) { $roots += $installed.InstallLocation }
           $roots += @(
-            (Join-Path $env:LOCALAPPDATA 'CinaVault Premium'),
-            (Join-Path $env:ProgramFiles 'CinaVault Premium'),
-            (Join-Path ${env:ProgramFiles(x86)} 'CinaVault Premium')
+            (Join-Path $env:LOCALAPPDATA 'CinaVault 3.0'),
+            (Join-Path $env:ProgramFiles 'CinaVault 3.0'),
+            (Join-Path ${env:ProgramFiles(x86)} 'CinaVault 3.0')
           )
           $exe = if ($displayIconPath -and (Test-Path $displayIconPath -PathType Leaf)) {
             Get-Item $displayIconPath
           } else {
-            $executableNames = @('cinavault-premium.exe', 'CinaVault Premium.exe')
+            $executableNames = @('CinaVault 3.0.exe', 'cinavault-3.exe')
             $roots |
               Where-Object { $_ -and (Test-Path $_) } |
               ForEach-Object {
@@ -450,7 +426,7 @@ jobs:
         with:
           tag_name: ${{ needs.authorize.outputs.release_tag }}
           target_commitish: ${{ github.sha }}
-          name: CinaVault Premium ${{ needs.authorize.outputs.display_name }}
+          name: CinaVault 3.0 ${{ needs.authorize.outputs.display_name }}
           prerelease: false
           generate_release_notes: true
           fail_on_unmatched_files: true

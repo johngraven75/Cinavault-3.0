@@ -8,29 +8,38 @@ const contract = JSON.parse(await readFile(contractUrl, "utf8"));
 const destinationIds = new Set(contract.destinations.map((entry) => entry.id));
 const capabilityIds = new Set(contract.crossPlatformCapabilities);
 const defectIds = new Set(contract.defectParity.map((entry) => entry.id));
+const platformIds = new Set(contract.platforms.map((entry) => entry.id));
 
-test("platform parity contract uses the current Windows Premium reference", () => {
+test("platform parity contract uses the current CinaVault 3.0 OS edition reference", () => {
   assert.equal(contract.schemaVersion, 1);
-  assert.equal(contract.reference.repository, "johngraven75/CinaVault-Premium");
-  assert.equal(contract.reference.release, "v2-build-1.13");
-  assert.equal(contract.reference.displayName, "v2.13 Build 1.13");
-  assert.equal(contract.reference.semanticVersion, "2.0.13");
+  assert.equal(contract.reference.repository, "johngraven75/Cinavault-3.0");
+  assert.equal(contract.reference.release, "v3-build-1");
+  assert.equal(contract.reference.displayName, "v3.0 Build 1");
+  assert.equal(contract.reference.semanticVersion, "3.0.0");
   assert.equal(contract.reference.platform, "windows");
   assert.deepEqual(contract.includedRepositories, [
-    "johngraven75/CinaVault-Premium",
-    "johngraven75/cinavault-android",
-    "johngraven75/Cinavault-Server-Premium-Edition-iOS",
+    "johngraven75/Cinavault-3.0",
+    "johngraven75/Cinavault-3.0-Linux",
+    "johngraven75/Cinavault-3.0-Android",
+    "johngraven75/Cinavault-3.0-iOS",
   ]);
   assert.deepEqual(contract.excludedRepositories, [
     {
       repository: "johngraven75/Cinavault-Reimagined",
       reason:
-        "Work in this repository is exclusive to that repository and must not be copied into or out of the Premium parity program.",
+        "Work in this repository is exclusive to that repository and must not be copied into or out of the CinaVault 3.0 OS edition program.",
     },
   ]);
 });
 
-test("all Windows primary destinations are required on Android and iOS", () => {
+test("all required OS edition repositories are tracked", () => {
+  for (const id of ["windows", "linux-ubuntu", "android", "ios"]) {
+    assert.ok(platformIds.has(id), `missing platform parity requirement: ${id}`);
+  }
+  assert.ok(contract.platforms.every((entry) => entry.required === true));
+});
+
+test("all Windows primary destinations are required on Ubuntu Linux, Android, and iOS", () => {
   for (const id of [
     "library",
     "sources",

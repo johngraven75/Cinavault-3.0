@@ -5,7 +5,7 @@ use std::time::Duration;
 
 const MAX_ARTWORK_BYTES: usize = 25 * 1024 * 1024;
 const USER_AGENT: &str = concat!(
-    "CinaVault-Premium/",
+    "CinaVault-3.0/",
     env!("CARGO_PKG_VERSION"),
     " metadata-enrichment"
 );

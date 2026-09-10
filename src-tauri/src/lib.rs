@@ -308,7 +308,7 @@ pub fn run() {
             pick_file,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running CinaVault Premium");
+        .expect("error while running CinaVault 3.0");
 }
 
 #[tauri::command]

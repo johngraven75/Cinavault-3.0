@@ -1,6 +1,6 @@
 # CinaVault 3.0
 
-CinaVault 3.0 is a Windows-native media-server and desktop-management build that evolves the existing CinaVault Premium application toward the approved technical design. It retains the React/Rust/Tauri desktop client as an administration surface while introducing a separately hosted server foundation for safe library management, NAS-aware storage, and future Jellyfin-compatible services.
+CinaVault 3.0 is an independent media-server and desktop-management program, separate from CinaVault Premium. The Windows edition remains the reference implementation while Ubuntu Linux, Android, and iOS editions live in their own OS-specific repositories and share the same v3 product identity, parity contract, and release gate.
 
 ## Repository scope
 

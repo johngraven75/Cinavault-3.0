@@ -236,7 +236,7 @@ export default function Sidebar(): JSX.Element {
           >
             <img
               src="/branding/cinavault-logo.png"
-              alt="CinaVault Premium"
+              alt="CinaVault 3.0"
               className="h-10 w-10 rounded-[14px] object-cover"
             />
             <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-[#07101f] bg-emerald-300 shadow-[0_0_12px_rgba(98,255,194,0.9)]" />
