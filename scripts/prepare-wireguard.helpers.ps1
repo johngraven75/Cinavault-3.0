@@ -51,18 +51,23 @@ function Get-CodeSignature {
             [void]$startInfo.ArgumentList.Add($argument)
         }
         $process = [System.Diagnostics.Process]::Start($startInfo)
-        $stdout = $process.StandardOutput.ReadToEnd()
-        $stderr = $process.StandardError.ReadToEnd()
-        $process.WaitForExit()
-        $output = @()
-        if (-not [string]::IsNullOrWhiteSpace($stdout)) {
-            $output += $stdout -split '\r?\n'
+        try {
+            $stdout = $process.StandardOutput.ReadToEnd()
+            $stderr = $process.StandardError.ReadToEnd()
+            $process.WaitForExit()
+            $output = @()
+            if (-not [string]::IsNullOrWhiteSpace($stdout)) {
+                $output += $stdout -split '\r?\n'
+            }
+            if (-not [string]::IsNullOrWhiteSpace($stderr)) {
+                $output += $stderr -split '\r?\n'
+            }
+            if ($process.ExitCode -ne 0) {
+                throw "signtool.exe could not validate the Authenticode signature for $Path. $($output -join [Environment]::NewLine)"
+            }
         }
-        if (-not [string]::IsNullOrWhiteSpace($stderr)) {
-            $output += $stderr -split '\r?\n'
-        }
-        if ($process.ExitCode -ne 0) {
-            throw "signtool.exe could not validate the Authenticode signature for $Path. $($output -join [Environment]::NewLine)"
+        finally {
+            $process.Dispose()
         }
 
         $issuedTo = ($output | Where-Object { $_ -match '^\s*Issued to:\s*(.+)$' } | Select-Object -First 1)
