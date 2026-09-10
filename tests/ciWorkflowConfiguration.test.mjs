@@ -70,10 +70,10 @@ test("WireGuard preparation accepts valid MSI signatures but rejects non-officia
     t.skip("pwsh is not available");
   }
 
-  const tempScriptPath = path.join(
-    os.tmpdir(),
-    `ci-wireguard-validation-${process.pid}-${Date.now()}.ps1`,
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-validation-"),
   );
+  const tempScriptPath = path.join(tempDirectory, "validate-wireguard.ps1");
   const helpers = readWireGuardFunctionBlock();
 
   fs.writeFileSync(
@@ -137,6 +137,6 @@ catch {
     assert.doesNotMatch(output, /unexpected-pass/);
     assert.match(output, /WireGuard executable does not have a valid WireGuard Authenticode signature/);
   } finally {
-    fs.rmSync(tempScriptPath, { force: true });
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
   }
 });
