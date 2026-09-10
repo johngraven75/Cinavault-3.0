@@ -17,11 +17,7 @@ const canRunPowerShellHelperTests = hasPowerShellCore();
 const canRunWireGuardWindowsContract =
   process.platform === "win32" && canRunPowerShellHelperTests;
 
-test("WireGuard signature fallback accepts signtool output without ProcessStartInfo.ArgumentList", (t) => {
-  if (!canRunPowerShellHelperTests) {
-    t.skip("WireGuard PowerShell helper test requires pwsh");
-  }
-
+const runSigntoolFallbackContract = () => {
   const tempDirectory = fs.mkdtempSync(
     path.join(os.tmpdir(), "ci-wireguard-signtool-fallback-"),
   );
@@ -67,6 +63,25 @@ Write-Output "$($signature.Status)|$($signature.PublisherIdentity)|$($signature.
   } finally {
     fs.rmSync(tempDirectory, { force: true, recursive: true });
   }
+};
+
+test("WireGuard signature fallback accepts signtool output without ProcessStartInfo.ArgumentList", (t) => {
+  if (!canRunPowerShellHelperTests) {
+    t.skip("WireGuard PowerShell helper test requires pwsh");
+  }
+  if (process.platform === "win32") {
+    t.skip("Windows-specific signtool fallback is covered by the Win32 contract");
+  }
+
+  runSigntoolFallbackContract();
+});
+
+test("WireGuard signature fallback accepts signtool output on Windows contract runtimes", (t) => {
+  if (!canRunWireGuardWindowsContract) {
+    t.skip("WireGuard Windows contract requires win32 and pwsh");
+  }
+
+  runSigntoolFallbackContract();
 });
 
 test("WireGuard preparation accepts the official signer identity", (t) => {
