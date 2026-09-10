@@ -155,8 +155,8 @@ function Test-OfficialWireGuardBinary {
     }
 
     try {
-        $signature = Assert-AuthenticodeSignature -Path $Path -Label 'WireGuard executable' -RequireOfficialWireGuardSigner
-        return Test-OfficialWireGuardSignerSubject -SignerCertificate $signature.SignerCertificate
+        Assert-AuthenticodeSignature -Path $Path -Label 'WireGuard executable' -RequireOfficialWireGuardSigner | Out-Null
+        return $true
     }
     catch {
         return $false
