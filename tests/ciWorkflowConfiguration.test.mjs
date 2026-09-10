@@ -58,10 +58,10 @@ test("WireGuard preparation accepts the official signer identity", (t) => {
       "-NoProfile",
       "-Command",
       `. '${wireGuardHelperPath.replace(/'/g, "''")}'; ` +
-        "$trustedSubject = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ Subject = 'CN=WireGuard LLC, O=WireGuard LLC' }); " +
-        "$legacySubject = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ Subject = 'CN=Jason A. Donenfeld' }); " +
-        "$trustedFallback = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'WireGuard LLC' }); " +
-        "$mismatch = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'CN=AAA Certificate Services, O=WireGuard LLC' }); " +
+        "$trustedSubject = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ Subject = 'CN=WireGuard LLC, O=WireGuard LLC' }); " +
+        "$legacySubject = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ Subject = 'CN=Jason A. Donenfeld' }); " +
+        "$trustedFallback = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'WireGuard LLC' }); " +
+        "$mismatch = Test-OfficialWireGuardSignerSubject -SignatureLike ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'CN=AAA Certificate Services, O=WireGuard LLC' }); " +
         'Write-Output \"$trustedSubject,$legacySubject,$trustedFallback,$mismatch\"',
     ],
     { encoding: "utf8" },

@@ -19,7 +19,12 @@ function Get-CodeSignature {
 
     try {
         Import-Module Microsoft.PowerShell.Security -ErrorAction Stop
-        return Get-AuthenticodeSignature -LiteralPath $Path
+        $signature = Get-AuthenticodeSignature -LiteralPath $Path
+        return [pscustomobject]@{
+            Status = [string]$signature.Status
+            SignerCertificate = $signature.SignerCertificate
+            PublisherIdentity = Get-SignerPublisherIdentity -SignerCertificate $signature.SignerCertificate
+        }
     }
     catch {
         $signatureToolCommand = Get-Command signtool.exe -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -49,13 +54,13 @@ function Get-CodeSignature {
             Status = 'Valid'
             SignerCertificate = [pscustomobject]@{
                 Subject = $subject
-                SimpleName = $subject
             }
+            PublisherIdentity = $subject
         }
     }
 }
 
-function Get-SignerSimpleName {
+function Get-SignerPublisherIdentity {
     param($SignerCertificate)
 
     if ($null -eq $SignerCertificate) {
@@ -117,16 +122,28 @@ function Get-NormalizedSignerSubject {
 }
 
 function Test-OfficialWireGuardSignerSubject {
-    param($SignerCertificate)
+    param($SignatureLike)
 
-    $normalizedSubject = Get-NormalizedSignerSubject -SignerCertificate $SignerCertificate
+    $signerCertificate = if ($SignatureLike -and $SignatureLike.PSObject.Properties.Name -contains 'SignerCertificate') {
+        $SignatureLike.SignerCertificate
+    }
+    else {
+        $SignatureLike
+    }
+
+    $normalizedSubject = Get-NormalizedSignerSubject -SignerCertificate $signerCertificate
     if (-not [string]::IsNullOrWhiteSpace($normalizedSubject)) {
         return $script:OfficialWireGuardSignerSubjects -contains $normalizedSubject
     }
 
-    $simpleName = Get-SignerSimpleName -SignerCertificate $SignerCertificate
+    $publisherIdentity = if ($SignatureLike -and $SignatureLike.PSObject.Properties.Name -contains 'PublisherIdentity') {
+        $SignatureLike.PublisherIdentity
+    }
+    else {
+        Get-SignerPublisherIdentity -SignerCertificate $signerCertificate
+    }
 
-    return $script:OfficialWireGuardSignerNames -contains $simpleName
+    return $script:OfficialWireGuardSignerNames -contains $publisherIdentity
 }
 
 function Assert-AuthenticodeSignature {
@@ -142,7 +159,7 @@ function Assert-AuthenticodeSignature {
         throw "$Label does not have a valid Authenticode signature. Status: $($signature.Status); signer: $signerSubject"
     }
 
-    if ($RequireOfficialWireGuardSigner -and -not (Test-OfficialWireGuardSignerSubject -SignerCertificate $signature.SignerCertificate)) {
+    if ($RequireOfficialWireGuardSigner -and -not (Test-OfficialWireGuardSignerSubject -SignatureLike $signature)) {
         throw "$Label is Authenticode-signed but not by a trusted official WireGuard publisher. Status: $($signature.Status); signer: $signerSubject"
     }
 
