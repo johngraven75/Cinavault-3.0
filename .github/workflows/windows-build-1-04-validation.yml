@@ -68,6 +68,12 @@ jobs:
           npm run build 2>&1 | Tee-Object validation-logs/frontend-build.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: WireGuard Windows signer contract
+        shell: pwsh
+        run: |
+          npm run test:wireguard:windows-contract 2>&1 | Tee-Object validation-logs/wireguard-signer-contract.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Prepare genuine Windows bundle resources
         shell: pwsh
         run: |

@@ -12,86 +12,15 @@ if ([System.Environment]::OSVersion.Platform -ne [System.PlatformID]::Win32NT) {
     throw 'The bundled WireGuard engine can only be prepared on Windows.'
 }
 
+$scriptPath = $MyInvocation.MyCommand.Path
+if ([string]::IsNullOrWhiteSpace($scriptPath)) {
+    throw 'Unable to resolve the WireGuard preparation script directory.'
+}
+$scriptDirectory = Split-Path -Parent $scriptPath
+. (Join-Path $scriptDirectory 'prepare-wireguard.helpers.ps1')
+
 if ([string]::IsNullOrWhiteSpace($Destination)) {
-    $scriptPath = $MyInvocation.MyCommand.Path
-    if ([string]::IsNullOrWhiteSpace($scriptPath)) {
-        throw 'Unable to resolve the WireGuard preparation script directory.'
-    }
-    $scriptDirectory = Split-Path -Parent $scriptPath
     $Destination = Join-Path $scriptDirectory '..\src-tauri\tools\wireguard\wireguard.exe'
-}
-
-function Get-CodeSignature {
-    param([Parameter(Mandatory = $true)][string]$Path)
-
-    try {
-        Import-Module Microsoft.PowerShell.Security -ErrorAction Stop
-        return Get-AuthenticodeSignature -LiteralPath $Path
-    }
-    catch {
-        $signatureToolCommand = Get-Command signtool.exe -ErrorAction SilentlyContinue | Select-Object -First 1
-        $signatureToolPath = if ($signatureToolCommand) { $signatureToolCommand.Source } else { $null }
-        if ([string]::IsNullOrWhiteSpace($signatureToolPath)) {
-            $windowsKitsProgramFiles = [System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
-            $windowsKitsRoot = if ($windowsKitsProgramFiles) { Join-Path $windowsKitsProgramFiles 'Windows Kits\10\bin' } else { $null }
-            if ($windowsKitsRoot -and (Test-Path -LiteralPath $windowsKitsRoot)) {
-                $signatureToolPath = Get-ChildItem -LiteralPath $windowsKitsRoot -Recurse -File -Filter signtool.exe -ErrorAction SilentlyContinue |
-                    Where-Object { $_.FullName -match '\\x64\\signtool\.exe$' } |
-                    Sort-Object FullName -Descending |
-                    Select-Object -First 1 -ExpandProperty FullName
-            }
-        }
-        if ([string]::IsNullOrWhiteSpace($signatureToolPath)) {
-            throw "Unable to validate the Authenticode signature for $Path because Microsoft.PowerShell.Security and signtool.exe are unavailable. $($_.Exception.Message)"
-        }
-
-        $output = & $signatureToolPath verify /pa /v $Path 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            throw "signtool.exe could not validate the Authenticode signature for $Path. $($output -join [Environment]::NewLine)"
-        }
-
-        $issuedTo = ($output | Where-Object { $_ -match '^\s*(Issued to|Subject):\s*(.+)$' } | Select-Object -First 1)
-        $subject = if ($issuedTo -and $issuedTo -match '^\s*(Issued to|Subject):\s*(.+)$') { $Matches[2] } else { $output -join ' ' }
-        return [pscustomobject]@{
-            Status = 'Valid'
-            SignerCertificate = [pscustomobject]@{
-                Subject = $subject
-            }
-        }
-    }
-}
-
-function Test-OfficialWireGuardBinary {
-    param([Parameter(Mandatory = $true)][string]$Path)
-
-    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
-        return $false
-    }
-
-    $item = Get-Item -LiteralPath $Path
-    if ($item.Length -lt 1MB -or $item.VersionInfo.ProductName -notmatch '(?i)WireGuard') {
-        return $false
-    }
-
-    $signature = Get-CodeSignature -Path $Path
-    return $signature.Status -eq 'Valid' -and
-        $null -ne $signature.SignerCertificate -and
-        $signature.SignerCertificate.Subject -match '(?i)WireGuard'
-}
-
-function Assert-OfficialSignature {
-    param(
-        [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][string]$Label
-    )
-
-    $signature = Get-CodeSignature -Path $Path
-    $signerSubject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
-    if ($signature.Status -ne 'Valid' -or
-        $null -eq $signature.SignerCertificate -or
-        $signerSubject -notmatch '(?i)(WireGuard|Jason A\. Donenfeld)') {
-        throw "$Label does not have a valid WireGuard Authenticode signature. Status: $($signature.Status); signer: $signerSubject"
-    }
 }
 
 $destinationPath = [System.IO.Path]::GetFullPath($Destination)
@@ -128,7 +57,7 @@ try {
 
         Write-Host "Downloading the official WireGuard MSI from $MsiUrl"
         Invoke-WebRequest -Uri $MsiUrl -OutFile $msiPath -UseBasicParsing
-        Assert-OfficialSignature -Path $msiPath -Label 'Downloaded WireGuard MSI'
+        Assert-AuthenticodeSignature -Path $msiPath -Label 'Downloaded WireGuard MSI'
 
         $msiArguments = "/a `"$msiPath`" /qn TARGETDIR=`"$extractionPath`""
         $extract = Start-Process msiexec.exe -ArgumentList $msiArguments -Wait -PassThru
