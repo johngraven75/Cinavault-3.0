@@ -56,16 +56,73 @@ function Get-CodeSignature {
             Status = 'Valid'
             SignerCertificate = [pscustomobject]@{
                 Subject = $subject
+                SimpleName = $subject
             }
         }
     }
 }
 
-function Test-OfficialWireGuardSignerSubject {
-    param([string]$Subject)
+function Get-CertificateSubjectComponent {
+    param(
+        [string]$Subject,
+        [Parameter(Mandatory = $true)][string]$ComponentName
+    )
 
-    return -not [string]::IsNullOrWhiteSpace($Subject) -and
-        $Subject -match '(?i)(WireGuard|Jason A\. Donenfeld)'
+    if ([string]::IsNullOrWhiteSpace($Subject)) {
+        return $null
+    }
+
+    $match = [regex]::Match($Subject, "(?i)(?:^|,)\s*$([regex]::Escape($ComponentName))\s*=\s*([^,]+)")
+    if ($match.Success) {
+        return $match.Groups[1].Value.Trim()
+    }
+
+    return $null
+}
+
+function Get-SignerSimpleName {
+    param($SignerCertificate)
+
+    if ($null -eq $SignerCertificate) {
+        return $null
+    }
+
+    if ($SignerCertificate.PSObject.Methods.Name -contains 'GetNameInfo') {
+        try {
+            $simpleName = $SignerCertificate.GetNameInfo(
+                [System.Security.Cryptography.X509Certificates.X509NameType]::SimpleName,
+                $false
+            )
+            if (-not [string]::IsNullOrWhiteSpace($simpleName)) {
+                return $simpleName.Trim()
+            }
+        }
+        catch {
+        }
+    }
+
+    if ($SignerCertificate.PSObject.Properties.Name -contains 'SimpleName' -and
+        -not [string]::IsNullOrWhiteSpace($SignerCertificate.SimpleName)) {
+        return $SignerCertificate.SimpleName.Trim()
+    }
+
+    $commonName = Get-CertificateSubjectComponent -Subject $SignerCertificate.Subject -ComponentName 'CN'
+    if (-not [string]::IsNullOrWhiteSpace($commonName)) {
+        return $commonName
+    }
+
+    return $SignerCertificate.Subject
+}
+
+function Test-OfficialWireGuardSignerSubject {
+    param($SignerCertificate)
+
+    $simpleName = Get-SignerSimpleName -SignerCertificate $SignerCertificate
+    $subject = if ($SignerCertificate) { $SignerCertificate.Subject } else { $null }
+    $organization = Get-CertificateSubjectComponent -Subject $subject -ComponentName 'O'
+
+    return @('WireGuard', 'WireGuard LLC', 'Jason A. Donenfeld') -contains $simpleName -or
+        @('WireGuard', 'WireGuard LLC') -contains $organization
 }
 
 function Assert-AuthenticodeSignature {
@@ -81,7 +138,7 @@ function Assert-AuthenticodeSignature {
         throw "$Label does not have a valid Authenticode signature. Status: $($signature.Status); signer: $signerSubject"
     }
 
-    if ($RequireOfficialWireGuardSigner -and -not (Test-OfficialWireGuardSignerSubject -Subject $signerSubject)) {
+    if ($RequireOfficialWireGuardSigner -and -not (Test-OfficialWireGuardSignerSubject -SignerCertificate $signature.SignerCertificate)) {
         throw "$Label does not have a valid WireGuard Authenticode signature. Status: $($signature.Status); signer: $signerSubject"
     }
 
@@ -102,7 +159,7 @@ function Test-OfficialWireGuardBinary {
 
     try {
         $signature = Assert-AuthenticodeSignature -Path $Path -Label 'WireGuard executable' -RequireOfficialWireGuardSigner
-        return Test-OfficialWireGuardSignerSubject -Subject $signature.SignerCertificate.Subject
+        return Test-OfficialWireGuardSignerSubject -SignerCertificate $signature.SignerCertificate
     }
     catch {
         return $false

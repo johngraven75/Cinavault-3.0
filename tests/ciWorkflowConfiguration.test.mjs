@@ -40,7 +40,9 @@ test("WireGuard preparation accepts the official signer identity", () => {
   const script = read("scripts/prepare-wireguard.ps1");
 
   assert.match(script, /function Test-OfficialWireGuardSignerSubject/);
-  assert.match(script, /Jason A\\\. Donenfeld/);
+  assert.match(script, /function Get-SignerSimpleName/);
+  assert.match(script, /WireGuard LLC/);
+  assert.match(script, /Jason A\. Donenfeld/);
   assert.match(script, /RequireOfficialWireGuardSigner/);
   assert.match(script, /Assert-AuthenticodeSignature -Path \$msiPath -Label 'Downloaded WireGuard MSI'/);
 });
