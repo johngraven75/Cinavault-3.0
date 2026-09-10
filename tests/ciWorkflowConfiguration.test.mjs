@@ -6,22 +6,13 @@ import path from "node:path";
 import test from "node:test";
 
 const read = (path) => fs.readFileSync(path, "utf8");
+const wireGuardHelperPath = path.resolve("scripts/prepare-wireguard.helpers.ps1");
 const hasPowerShellCore = () => {
   const result = spawnSync("pwsh", ["-NoProfile", "-Command", "exit 0"], {
     stdio: "ignore",
   });
 
   return !result.error && result.status === 0;
-};
-const readWireGuardFunctionBlock = () => {
-  const script = read("scripts/prepare-wireguard.ps1");
-  const start = script.indexOf("$officialWireGuardSignerNames =");
-  const end = script.indexOf("$destinationPath =");
-
-  assert.notEqual(start, -1, "WireGuard helper functions should exist");
-  assert.notEqual(end, -1, "WireGuard helper functions should end before runtime execution");
-
-  return script.slice(start, end);
 };
 
 test("Windows validation asserts the authoritative build identity", () => {
@@ -56,13 +47,26 @@ test("Cargo lockfile is reproducible UTF-8 TOML", () => {
   assert.match(lockfile, /^\[\[package\]\]$/m);
 });
 
-test("WireGuard preparation accepts the official signer identity", () => {
-  const script = read("scripts/prepare-wireguard.ps1");
+test("WireGuard preparation accepts the official signer identity", (t) => {
+  if (!hasPowerShellCore()) {
+    t.skip("pwsh is not available");
+  }
 
-  assert.match(script, /function Test-OfficialWireGuardSignerSubject/);
-  assert.match(script, /function Get-SignerSimpleName/);
-  assert.match(script, /WireGuard LLC/);
-  assert.match(script, /Assert-AuthenticodeSignature -Path \$msiPath -Label 'Downloaded WireGuard MSI'/);
+  const output = execFileSync(
+    "pwsh",
+    [
+      "-NoProfile",
+      "-Command",
+      `. '${wireGuardHelperPath.replace(/'/g, "''")}'; ` +
+        "$trusted = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'WireGuard LLC'; Subject = 'CN=WireGuard LLC, O=WireGuard LLC' }); " +
+        "$legacy = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'Jason A. Donenfeld'; Subject = 'CN=Jason A. Donenfeld' }); " +
+        "$untrusted = Test-OfficialWireGuardSignerSubject -SignerCertificate ([pscustomobject]@{ SimpleName = 'AAA Certificate Services'; Subject = 'CN=AAA Certificate Services, O=AAA Certificate Services' }); " +
+        'Write-Output \"$trusted,$legacy,$untrusted\"',
+    ],
+    { encoding: "utf8" },
+  ).trim();
+
+  assert.equal(output, "True,True,False");
 });
 
 test("WireGuard preparation accepts valid MSI signatures but rejects non-official executable publishers", (t) => {
@@ -74,11 +78,9 @@ test("WireGuard preparation accepts valid MSI signatures but rejects non-officia
     path.join(os.tmpdir(), "ci-wireguard-validation-"),
   );
   const tempScriptPath = path.join(tempDirectory, "validate-wireguard.ps1");
-  const helpers = readWireGuardFunctionBlock();
-
   fs.writeFileSync(
     tempScriptPath,
-    `${helpers}
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
 function Get-CodeSignature {
     param([Parameter(Mandatory = $true)][string]$Path)
 
