@@ -47,33 +47,47 @@ jobs:
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
 
     steps:
-      - name: Summarize Sonar configuration presence (sanitized)
+      - name: Evaluate Sonar configuration presence (sanitized)
+        id: sonar-config
         # Write presence/absence of the relevant entries to the GitHub job summary; secrets are never printed
         shell: bash
         run: |
           echo "## SonarCloud configuration presence" >> "$GITHUB_STEP_SUMMARY"
 
-          if [ -n "${{ vars.SONAR_PROJECT_KEY }}" ]; then
+          has_project_key=false
+          has_organization=false
+          has_token=false
+
+          if [ -n "$SONAR_PROJECT_KEY" ]; then
             echo "- SONAR_PROJECT_KEY: present" >> "$GITHUB_STEP_SUMMARY"
+            has_project_key=true
           else
             echo "- SONAR_PROJECT_KEY: MISSING" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-          if [ -n "${{ vars.SONAR_ORGANIZATION }}" ]; then
+          if [ -n "$SONAR_ORGANIZATION" ]; then
             echo "- SONAR_ORGANIZATION: present" >> "$GITHUB_STEP_SUMMARY"
+            has_organization=true
           else
             echo "- SONAR_ORGANIZATION: MISSING" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-          if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
+          if [ -n "$SONAR_TOKEN" ]; then
             echo "- SONAR_TOKEN: present (redacted)" >> "$GITHUB_STEP_SUMMARY"
+            has_token=true
           else
             echo "- SONAR_TOKEN: MISSING" >> "$GITHUB_STEP_SUMMARY"
           fi
 
+          if [ "$has_project_key" = true ] && [ "$has_organization" = true ] && [ "$has_token" = true ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: SonarCloud configuration notice
-        # show the notice when the secret or required variables are missing (explicit existence checks)
-        if: ${{ !secrets.SONAR_TOKEN || !vars.SONAR_PROJECT_KEY || !vars.SONAR_ORGANIZATION }}
+        # show the notice when the secret or required variables are missing
+        if: ${{ steps.sonar-config.outputs.ready != 'true' }}
         shell: bash
         run: |
           echo "::notice title=SonarCloud skipped::Configure the SONAR_TOKEN secret and SONAR_PROJECT_KEY and SONAR_ORGANIZATION repository variables to enable analysis."
@@ -81,10 +95,10 @@ jobs:
           echo "The required SONAR_TOKEN secret and/or project configuration variables are not available." >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        if: ${{ secrets.SONAR_TOKEN && vars.SONAR_PROJECT_KEY && vars.SONAR_ORGANIZATION }}
+        if: ${{ steps.sonar-config.outputs.ready == 'true' }}
 
       - name: Analyze with SonarCloud
-        if: ${{ secrets.SONAR_TOKEN && vars.SONAR_PROJECT_KEY && vars.SONAR_ORGANIZATION }}
+        if: ${{ steps.sonar-config.outputs.ready == 'true' }}
 
         # You can pin the exact commit or the version.
         # uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216 # v2.2.0
