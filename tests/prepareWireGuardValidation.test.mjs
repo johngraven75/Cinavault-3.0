@@ -13,8 +13,76 @@ const hasPowerShellCore = () => {
 
   return !result.error && result.status === 0;
 };
+const canRunPowerShellHelperTests = hasPowerShellCore();
 const canRunWireGuardWindowsContract =
-  process.platform === "win32" && hasPowerShellCore();
+  process.platform === "win32" && canRunPowerShellHelperTests;
+
+const runSigntoolFallbackContract = () => {
+  const tempDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "ci-wireguard-signtool-fallback-"),
+  );
+  const fakeSignToolPath = path.join(
+    tempDirectory,
+    process.platform === "win32" ? "signtool.cmd" : "signtool",
+  );
+  const tempScriptPath = path.join(tempDirectory, "signtool-fallback.ps1");
+  fs.writeFileSync(
+    fakeSignToolPath,
+    process.platform === "win32"
+      ? "@echo off\r\necho Issued to: WireGuard LLC\r\necho Subject: CN=WireGuard LLC, O=WireGuard LLC\r\n"
+      : "#!/usr/bin/env bash\nprintf 'Issued to: WireGuard LLC\\nSubject: CN=WireGuard LLC, O=WireGuard LLC\\n'\n",
+    { encoding: "utf8", mode: 0o755 },
+  );
+  fs.writeFileSync(
+    tempScriptPath,
+    `. '${wireGuardHelperPath.replace(/'/g, "''")}'
+function Import-Module {
+    throw 'module unavailable'
+}
+
+function Get-Command {
+    param()
+    return [pscustomobject]@{ Source = '${fakeSignToolPath.replace(/'/g, "''")}' }
+}
+
+$signature = Get-CodeSignature -Path '${path.join(tempDirectory, "wireguard with spaces.exe").replace(/'/g, "''")}'
+Write-Output "$($signature.Status)|$($signature.PublisherIdentity)|$($signature.SignerCertificate.Subject)"
+`,
+    "utf8",
+  );
+
+  try {
+    const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
+      encoding: "utf8",
+    }).trim();
+
+    assert.equal(
+      output,
+      "Valid|WireGuard LLC|CN=WireGuard LLC, O=WireGuard LLC",
+    );
+  } finally {
+    fs.rmSync(tempDirectory, { force: true, recursive: true });
+  }
+};
+
+test("WireGuard signature fallback accepts signtool output without ProcessStartInfo.ArgumentList", (t) => {
+  if (!canRunPowerShellHelperTests) {
+    t.skip("WireGuard PowerShell helper test requires pwsh");
+  }
+  if (process.platform === "win32") {
+    t.skip("Windows-specific signtool fallback is covered by the Win32 contract");
+  }
+
+  runSigntoolFallbackContract();
+});
+
+test("WireGuard signature fallback accepts signtool output on Windows contract runtimes", (t) => {
+  if (!canRunWireGuardWindowsContract) {
+    t.skip("WireGuard Windows contract requires win32 and pwsh");
+  }
+
+  runSigntoolFallbackContract();
+});
 
 test("WireGuard preparation accepts the official signer identity", (t) => {
   if (!canRunWireGuardWindowsContract) {
