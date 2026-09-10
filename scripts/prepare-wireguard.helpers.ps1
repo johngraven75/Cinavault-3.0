@@ -44,10 +44,12 @@ function Get-CodeSignature {
 
         $stdoutPath = [System.IO.Path]::GetTempFileName()
         $stderrPath = [System.IO.Path]::GetTempFileName()
+        $quotedPath = '"{0}"' -f $Path.Replace('"', '""')
+        $signatureToolArguments = "verify /pa /v $quotedPath"
         $process = $null
         try {
             $process = Start-Process -FilePath $signatureToolPath `
-                -ArgumentList @('verify', '/pa', '/v', $Path) `
+                -ArgumentList $signatureToolArguments `
                 -NoNewWindow `
                 -Wait `
                 -PassThru `
