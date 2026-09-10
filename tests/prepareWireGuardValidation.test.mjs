@@ -173,6 +173,10 @@ catch {
   try {
     const output = execFileSync("pwsh", ["-NoProfile", "-File", tempScriptPath], {
       encoding: "utf8",
+      env: {
+        ...process.env,
+        "ProgramFiles(x86)": "",
+      },
     });
 
     assert.doesNotMatch(output, /unexpected-pass/);
