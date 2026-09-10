@@ -42,8 +42,33 @@ function Get-CodeSignature {
             throw "Unable to validate the Authenticode signature for $Path because Microsoft.PowerShell.Security and signtool.exe are unavailable. $($_.Exception.Message)"
         }
 
-        $output = & $signatureToolPath verify /pa /v ('"{0}"' -f $Path) 2>&1
-        if ($LASTEXITCODE -ne 0) {
+        $outputPath = Join-Path ([System.IO.Path]::GetTempPath()) "cinavault-signtool-$([guid]::NewGuid().ToString('N')).stdout.log"
+        $errorPath = Join-Path ([System.IO.Path]::GetTempPath()) "cinavault-signtool-$([guid]::NewGuid().ToString('N')).stderr.log"
+        try {
+            $process = Start-Process -FilePath $signatureToolPath `
+                -ArgumentList @('verify', '/pa', '/v', $Path) `
+                -NoNewWindow `
+                -Wait `
+                -PassThru `
+                -RedirectStandardOutput $outputPath `
+                -RedirectStandardError $errorPath
+            $output = @()
+            if (Test-Path -LiteralPath $outputPath) {
+                $output += Get-Content -LiteralPath $outputPath
+            }
+            if (Test-Path -LiteralPath $errorPath) {
+                $output += Get-Content -LiteralPath $errorPath
+            }
+        }
+        finally {
+            if (Test-Path -LiteralPath $outputPath) {
+                Remove-Item -LiteralPath $outputPath -Force
+            }
+            if (Test-Path -LiteralPath $errorPath) {
+                Remove-Item -LiteralPath $errorPath -Force
+            }
+        }
+        if ($process.ExitCode -ne 0) {
             throw "signtool.exe could not validate the Authenticode signature for $Path. $($output -join [Environment]::NewLine)"
         }
 
