@@ -8,11 +8,6 @@ $script:OfficialWireGuardSignerNames = @(
     'jason a. donenfeld'
 )
 
-$script:OfficialWireGuardSignerSubjects = @(
-    'cn=wireguard llc, o=wireguard llc',
-    'cn=jason a. donenfeld'
-)
-
 function Get-CodeSignature {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -148,7 +143,7 @@ function Get-SignerPublisherIdentity {
     return $SignerCertificate.Subject
 }
 
-function Get-NormalizedSignerSubject {
+function Get-SignerSubjectRelativeNames {
     param($SignerCertificate)
 
     if ($null -eq $SignerCertificate -or [string]::IsNullOrWhiteSpace($SignerCertificate.Subject)) {
@@ -156,10 +151,33 @@ function Get-NormalizedSignerSubject {
     }
 
     try {
-        return ([System.Security.Cryptography.X509Certificates.X500DistinguishedName]::new($SignerCertificate.Subject)).Name
+        $distinguishedName = [System.Security.Cryptography.X509Certificates.X500DistinguishedName]::new($SignerCertificate.Subject)
+        $decodedSubject = $distinguishedName.Decode(
+            [System.Security.Cryptography.X509Certificates.X500DistinguishedNameFlags]::UseNewLines
+        )
     }
     catch {
         return $null
+    }
+
+    $commonNames = @()
+    $organizations = @()
+    foreach ($relativeName in ($decodedSubject -split '\r?\n')) {
+        if ($relativeName -match '^\s*CN=(.+)$') {
+            $commonNames += $Matches[1].Trim()
+        }
+        elseif ($relativeName -match '^\s*O=(.+)$') {
+            $organizations += $Matches[1].Trim()
+        }
+    }
+
+    if ($commonNames.Count -eq 0) {
+        return $null
+    }
+
+    return [pscustomobject]@{
+        CommonNames = $commonNames
+        Organizations = $organizations
     }
 }
 
@@ -173,9 +191,18 @@ function Test-OfficialWireGuardSignerSubject {
         $SignatureLike
     }
 
-    $normalizedSubject = Get-NormalizedSignerSubject -SignerCertificate $signerCertificate
-    if (-not [string]::IsNullOrWhiteSpace($normalizedSubject)) {
-        return $script:OfficialWireGuardSignerSubjects -contains $normalizedSubject.ToLowerInvariant()
+    # Official WireGuard code-signing certificates are EV certificates that also carry
+    # locality, jurisdiction, and registration relative names, so the subject is matched
+    # per relative name instead of as one fixed distinguished-name string.
+    $subjectNames = Get-SignerSubjectRelativeNames -SignerCertificate $signerCertificate
+    if ($subjectNames) {
+        foreach ($name in @($subjectNames.CommonNames) + @($subjectNames.Organizations)) {
+            if ($script:OfficialWireGuardSignerNames -notcontains $name.ToLowerInvariant()) {
+                return $false
+            }
+        }
+
+        return $true
     }
 
     $publisherIdentity = if ($SignatureLike -and $SignatureLike.PSObject.Properties.Name -contains 'PublisherIdentity') {
