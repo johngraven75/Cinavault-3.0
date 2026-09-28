@@ -35,7 +35,7 @@ igd-next = "0.17.1"
 natpmp = { version = "0.5", features = ["tokio"] }
 zip = "2"
 walkdir = "2"
-sha2 = "0.10"
+sha2 = "0.11"
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4"] }
 glob = "0.3"
