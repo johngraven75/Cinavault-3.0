@@ -25,6 +25,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 concurrency:
   group: release-v3-build-1
@@ -47,6 +48,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Post run link
+        if: >-
+          github.event.repository.fork != true &&
+          github.event.issue.pull_request == null &&
+          github.event.pull_request.head.repo.fork != true
+        continue-on-error: true
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
@@ -230,6 +236,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Post verified release
+        if: >-
+          github.event.repository.fork != true &&
+          github.event.issue.pull_request == null &&
+          github.event.pull_request.head.repo.fork != true
+        continue-on-error: true
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
@@ -250,6 +261,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Post failed run
+        if: >-
+          github.event.repository.fork != true &&
+          github.event.issue.pull_request == null &&
+          github.event.pull_request.head.repo.fork != true
+        continue-on-error: true
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
