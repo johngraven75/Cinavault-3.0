@@ -15,7 +15,7 @@ serde_json = "1"
 
 [dependencies]
 # Argon2id is required for adaptive, memory-hard remote-access password storage.
-argon2 = "0.5"
+argon2 = "0.6"
 tauri = { version = "2.11.2", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
